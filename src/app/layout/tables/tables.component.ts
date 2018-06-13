@@ -103,4 +103,10 @@ export class TablesComponent implements OnInit {
         this.updataData()
       });
     }
+    onRemoveSwitch(value){
+      const req = this.http.delete(this.url + value.id);
+      req.subscribe(res => {
+        this.updataData()
+      });
+    }
 }

@@ -7,12 +7,12 @@
             <i class="fa fa-fw fa-bar-chart-o"></i>&nbsp;{{ 'Charts' | translate }}
         </a>
         <a [routerLink]="['/tables']" [routerLinkActive]="['router-link-active']" class="list-group-item">
-            <i class="fa fa-fw fa-table"></i>&nbsp;{{ 'Tables' | translate }}
+            <i class="fa fa-fw fa-table"></i>&nbsp;{{ 'Switch Tables' | translate }}
         </a>
         <a [routerLink]="['/forms']" [routerLinkActive]="['router-link-active']" class="list-group-item">
-            <i class="fa fa-fw fa-edit"></i>&nbsp;{{ 'Forms' | translate }}
+            <i class="fa fa-fw fa-edit"></i>&nbsp;{{ 'RPM Manager' | translate }}
         </a>
-        <a [routerLink]="['/bs-element']" [routerLinkActive]="['router-link-active']" class="list-group-item">
+        <!-- <a [routerLink]="['/bs-element']" [routerLinkActive]="['router-link-active']" class="list-group-item">
             <i class="fa fa-fw fa-desktop"></i>&nbsp;{{ 'Bootstrap Element' | translate }}
         </a>
         <a [routerLink]="['/grid']" [routerLinkActive]="['router-link-active']" class="list-group-item">
@@ -20,7 +20,7 @@
         </a>
         <a [routerLink]="['/components']" [routerLinkActive]="['router-link-active']" class="list-group-item">
             <i class="fa fa-th-list"></i>&nbsp;{{ 'Component' | translate }}
-        </a>
+        </a> -->
         <!-- <div class="nested-menu">
             <a class="list-group-item" (click)="addExpandClass('pages')">
                 <span><i class="fa fa-plus"></i>&nbsp; {{ 'Menu' | translate }}</span>
@@ -94,9 +94,9 @@
                 </li>
             </div>
             <div class="nested-menu">
-                <a class="list-group-item" (click)="addExpandClass('profile')">
+                <!-- <a class="list-group-item" (click)="addExpandClass('profile')">
                     <span><i class="fa fa-user"></i>&nbsp; John Smith</span>
-                </a>
+                </a> -->
                 <li class="nested" [class.expand]="showMenu === 'profile'">
                     <ul class="submenu">
                         <li>

@@ -4,26 +4,23 @@
     <div class="row">
         <div class="col-lg-6">
 
+            <label>RPM Address</label>
+            <input class="form-control" #addressInput>
 
-            <fieldset class="form-group">
-                <label>RPM Address</label>
-                <input class="form-control" #addressInput>
-                <p class="help-block">Please type in absolute path.</p>
-            </fieldset>
-
+            <p class="help-block">Please type in absolute path.</p>
             <button (click)="onAdd(addressInput.value)" class="btn btn-primary">add</button>
-          
+            <p>
 
-
-
+            </p>
         </div>
+
         <div class="col-lg-6">
             <h4>Switches</h4>
             <div class="form-group">
-                <label>Checkboxes</label>
+
                 <div *ngFor="let switch of switchDic" class="checkbox">
                     <label>
-                        <input type="checkbox" value=""> {{switch.ip}}
+                        <input type="checkbox" value="" (change)="onCheckBoxChange(switch)"> {{switch.ip}}
                     </label>
                 </div>
 
@@ -36,6 +33,8 @@
         </div>
     </div>
     <!-- /.row -->
+
+
 
     <div class="card">
 
@@ -80,16 +79,19 @@
                         <div (click)="checkRpms()">Switches' rpms</div>
                     </ng-template>
                     <ng-template ngbTabContent>
+                        <div class="alert alert-success">
+                            <strong>{{status}}</strong>
+                        </div>
                         <div class="card sm-4" *ngFor="let r of TabRpmReports">
                             <div class="card-header">{{r.ip}}</div>
                             <div class="card-body table-responsive">
-                                <table class="table table-hover table-striped" >
+                                <table class="table table-hover table-striped">
                                     <thead>
                                         <tr>
                                             <th>name</th>
                                             <th>status</th>
                                             <td>
-                                              action
+                                                action
                                             </td>
                                         </tr>
                                     </thead>
@@ -98,14 +100,14 @@
                                             <td>{{rpm.package_id}}</td>
                                             <td>active</td>
                                             <td>
-                                              <button (click)="deactiveRemove(rpm.package_id)" class="btn btn-primary">delete</button>
+                                                <button (click)="deactiveRemove(rpm.package_id)" class="btn btn-warning">delete</button>
                                             </td>
                                         </tr>
                                         <tr *ngFor="let rpm of r.inactive">
                                             <td>{{rpm.package_id}}</td>
                                             <td>inactive</td>
                                             <td>
-                                              <button (click)="onActive(rpm.package_id)" class="btn btn-primary">active</button>
+                                                <button (click)="onActive(rpm.package_id)" class="btn btn-success">active</button>
                                             </td>
                                         </tr>
 
@@ -118,4 +120,5 @@
             </ngb-tabset>
         </div>
     </div>
+
 </div>

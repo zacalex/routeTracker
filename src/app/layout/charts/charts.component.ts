@@ -1,5 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit,ViewChild, ElementRef } from '@angular/core';
 import { routerTransition } from '../../router.animations';
+import { chart } from 'highcharts';
+import * as Highcharts from 'highcharts';
+import { Client } from 'elasticsearch-browser';
 
 @Component({
     selector: 'app-charts',
@@ -8,11 +11,23 @@ import { routerTransition } from '../../router.animations';
     animations: [routerTransition()]
 })
 export class ChartsComponent implements OnInit {
+
+    //highcharts
+    public chartHeight=35;
+
+    @ViewChild('chartTarget') chartTarget: ElementRef;
+    //elasticsearch
+
+    chart: Highcharts.ChartObject;
+    private client: Client;
     // bar chart
+
+
     public barChartOptions: any = {
         scaleShowVerticalLines: false,
         responsive: true
     };
+
     public barChartLabels: string[] = [
         '2006',
         '2007',
@@ -158,7 +173,124 @@ export class ChartsComponent implements OnInit {
          */
     }
 
-    constructor() {}
+    constructor() {
+        if (!this.client) {
+            this.connect();
+        }
+    }
+    private connect() {
+        this.client = new Client({
+            host: 'http://172.27.252.26:9200',
+            log: 'trace'
+        });
+        this.client.ping({
+            requestTimeout: Infinity,
+            body: 'hello JavaSampleApproach!'
+        }).then(function(resp) {
+            console.log(resp);
+        })
+            .catch(function(err) {
+                console.log(err);
+            });
+    }
 
-    ngOnInit() {}
+    ngOnInit() {
+        let self=this;
+        setInterval(() => {
+
+            this.client.search({
+                index: 'lan_info_stats_*',
+                body: {
+                    "size": 2,
+                    "sort": {
+                        "timestamp": {
+                            "order": "desc"
+                        }
+                    }
+                }
+            }).then(function(resp) {
+                var hits = resp.hits.hits;
+
+                // console.log(hits.length);
+
+                var x = (new Date()).getTime(), // current time
+                    dropped = -1,
+                    confirmed = -1;
+                for (var i in hits) {
+                    // console.log(hits[i]["_source"]["CoPP_dropped"]);
+                    if (hits[i]["_source"]["CoPP_dropped"] != null && dropped == -1) dropped = hits[i]["_source"]["CoPP_dropped"]
+                    if (hits[i]["_source"]["CoPP_conformed"] != null && confirmed == -1) confirmed = hits[i]["_source"]["CoPP_conformed"]
+                    // console.log("check comfirm",i,dropped)
+
+                }
+                // console.log(self)
+                self.chart.series[0].addPoint([x, dropped], true, true);
+                self.chart.series[1].addPoint([x, confirmed], true, true);
+                // console.log(self.chart)
+
+            }, function(err) {
+                console.trace(err.message);
+            });
+        }, 1000);
+    }
+    ngAfterViewInit() {
+    const options: Highcharts.Options = {
+      chart: {
+        type: 'spline'
+      },
+      title: {
+        text: ' '
+      },
+      xAxis: {
+        type: 'datetime',
+        tickPixelInterval: 150
+      },
+      yAxis: {
+        title: {
+          text: ' '
+        }
+      },
+      tooltip: {
+        formatter: function () {
+          return '<b>' + this.series.name + '</b><br/>' +
+            Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
+            Highcharts.numberFormat(this.y, 2);
+        }
+      },
+      series: [{
+        name: 'dropped packet',
+        data: (function () {
+          // generate an array of random data
+          var data = [],
+            time = (new Date()).getTime(),
+            i;
+
+          for (i = -19; i <= 0; i += 1) {
+            data.push({
+              x: time + i * 1000,
+              y: 0
+            });
+          }
+          return data;
+        }())
+      },{
+        name: 'confirmed packet',
+        data: (function () {
+          // generate an array of random data
+          var data = [],
+            time = (new Date()).getTime(),
+            i;
+
+          for (i = -19; i <= 0; i += 1) {
+            data.push({
+              x: time + i * 1000,
+              y: 0
+            });
+          }
+          return data;
+        }())
+      }]
+    };
+    this.chart = chart(this.chartTarget.nativeElement, options);
+  }
 }

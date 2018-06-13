@@ -223,6 +223,9 @@
                             <th>IP</th>
                             <th>name</th>
                             <th>pwd</th>
+                            <th>
+                              action
+                            </th>
                         </tr>
                         </thead>
                         <tbody>
@@ -231,6 +234,9 @@
                             <td>{{switch.ip}}</td>
                             <td>{{switch.name}}</td>
                             <td>{{switch.pwd}}</td>
+                            <td>
+                              <button (click)="onRemoveSwitch(switch)" class="btn btn-danger">delete</button>
+                            </td>
                         </tr>
 
                         </tbody>

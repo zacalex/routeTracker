@@ -20,8 +20,10 @@ export class FormComponent implements OnInit {
     currentRpm = {}
     rpmStatus = []
     targetSwitch = []
+    targetSwitchDic = {}
     TabLogs = []
     TabRpmReports = []
+    status = "waiting"
     constructor(private http: HttpClient) { }
 
     ngOnInit() {
@@ -45,56 +47,81 @@ export class FormComponent implements OnInit {
         console.log(report)
         console.log(report['report'].nxapi)
         console.log(report['report'].rpms)
-        if(report['report'].rpms.length > 0){
-          this.TabLogs.push(report['report'].rpms)
-          console.log(this.TabLogs)
-          for(var i in report['report'].rpms){
-            var currIp = report['report'].rpms[i].switchIp
-            console.log(report['report'].rpms[i].rpmname)
-            var paths = report['report'].rpms[i].rpmname.split("/")
-            var currentRpm = paths[paths.length - 1].split("-")[0]
-            console.log(currentRpm)
-            for(var ind in this.rpmStatus){
-              var st = this.rpmStatus[ind]
-              if(st.ip == currIp && st.rpm == currentRpm) {
-                console.log("found")
-                this.rpmStatus[ind].status = "installing"
-              }
-            }
-          }
-        }
-        if(report['report'].nxapi.length > 0){
-          this.TabLogs.push(report['report'].nxapi)
-          console.log(this.TabLogs)
-          for(var i in report['report'].nxapi){
-            var str = report['report'].nxapi[i]['result']
-            var rpmName = report['report'].nxapi[i]['rpmName']
-            var ip = report['report'].nxapi[i]['ip']
-            var nxapiObj = JSON.parse(str.replace(/[\n\r]/g,' '))
-            console.log(nxapiObj)
-            if(nxapiObj.ins_api.type == 'cli_show'){
-              var rpmReport = {}
-              rpmReport["ip"] = ip
-              rpmReport["active"] = nxapiObj.ins_api.outputs.output[0].body.TABLE_package_list.ROW_package_list
-              rpmReport["inactive"] = nxapiObj.ins_api.outputs.output[1].body.TABLE_package_list.ROW_package_list
-              this.TabRpmReports.push(rpmReport)
-              console.log(this.TabRpmReports)
-            }
-            else if(nxapiObj.ins_api.outputs.output.length == 2 &&
-              (nxapiObj.ins_api.outputs.output[1].msg == 'Success'
-              || nxapiObj.ins_api.outputs.output[1].clierror.includes("already active")
-              )
-            ){
-              console.log("installed")
-              for(var ind in this.rpmStatus){
-                var st = this.rpmStatus[ind]
-                if(st.ip == ip && st.rpm == rpmName) {
-                  console.log("found")
-                  this.rpmStatus[ind].status = "installed"
+        if (report['report'].rpms.length > 0) {
+            this.TabLogs.push(report['report'].rpms)
+            console.log(this.TabLogs)
+            for (var i in report['report'].rpms) {
+                var currIp = report['report'].rpms[i].switchIp
+                console.log(report['report'].rpms[i].rpmname)
+                var paths = report['report'].rpms[i].rpmname.split("/")
+                var currentRpm = paths[paths.length - 1].split("-")[0]
+                console.log(currentRpm)
+                for (var ind in this.rpmStatus) {
+                    var st = this.rpmStatus[ind]
+                    if (st.ip == currIp && st.rpm == currentRpm) {
+                        console.log("found")
+                        this.rpmStatus[ind].status = "installing"
+                    }
                 }
-              }
             }
-          }
+        }
+        if (report['report'].nxapi.length > 0) {
+            this.TabLogs.push(report['report'].nxapi)
+            console.log(this.TabLogs)
+            var str = ""
+            for (var i in report['report'].nxapi) {
+                str += report['report'].nxapi[i]['result']
+                if (!this.isJson(str)) {
+                    continue
+                }
+                console.log(str)
+                var rpmName = report['report'].nxapi[i]['rpmName']
+                var ip = report['report'].nxapi[i]['ip']
+                var nxapiObj = JSON.parse(str.replace(/[\n\r]/g, ' '))
+                str = ""
+                console.log(nxapiObj)
+                if (nxapiObj.ins_api.type == 'cli_show') {
+                    try {
+                        var rpmReport = {}
+                        rpmReport["ip"] = ip
+                        if (nxapiObj.ins_api.outputs.output[0].body && nxapiObj.ins_api.outputs.output[0].body.TABLE_package_list
+                            && nxapiObj.ins_api.outputs.output[0].body.TABLE_package_list.ROW_package_list) {
+                            rpmReport["active"] = nxapiObj.ins_api.outputs.output[0].body.TABLE_package_list.ROW_package_list
+                            if(rpmReport["active"].constructor !== Array ) {
+                              rpmReport["active"] = [rpmReport["active"]]
+                            }
+                        }
+                        if (nxapiObj.ins_api.outputs.output[1].body && nxapiObj.ins_api.outputs.output[1].body.TABLE_package_list
+                            && nxapiObj.ins_api.outputs.output[1].body.TABLE_package_list.ROW_package_list) {
+                            // console.log("inactive")
+                            rpmReport["inactive"] = nxapiObj.ins_api.outputs.output[1].body.TABLE_package_list.ROW_package_list
+                            if(rpmReport["inactive"].constructor !== Array ) {
+                              rpmReport["inactive"] = [rpmReport["inactive"]]
+                            }
+                        }
+                        this.TabRpmReports.unshift(rpmReport)
+                        console.log(this.TabRpmReports)
+                        this.status = "finished"
+                    } catch (e) {
+                        console.log(e)
+                    }
+
+                }
+                else if (nxapiObj.ins_api.outputs.output.length == 2 &&
+                    (nxapiObj.ins_api.outputs.output[1].msg == 'Success'
+                        || nxapiObj.ins_api.outputs.output[1].clierror.includes("already active")
+                    )
+                ) {
+                    console.log("installed")
+                    for (var ind in this.rpmStatus) {
+                        var st = this.rpmStatus[ind]
+                        if (st.ip == ip && st.rpm == rpmName) {
+                            console.log("found")
+                            this.rpmStatus[ind].status = "installed"
+                        }
+                    }
+                }
+            }
         }
         // if (report['nxapi'].length > 0 || report['rpms'].length > 0) {
         //     var nxapi_str = report['nxapi'][0].replace(/[\n\r]/g, ' ')
@@ -117,6 +144,14 @@ export class FormComponent implements OnInit {
         //     console.log(this.installInActive)
         // }
     }
+    isJson(str) {
+        try {
+            JSON.parse(str);
+        } catch (e) {
+            return false;
+        }
+        return true;
+    }
     getConfig() {
         return this.http.get(this.url);
     }
@@ -136,7 +171,7 @@ export class FormComponent implements OnInit {
             appName: appName
         }
 
-        this.targetSwitch = this.switchDic
+        // this.targetSwitch = this.switchDic
 
         for (var i in this.targetSwitch) {
             var status = {
@@ -163,26 +198,27 @@ export class FormComponent implements OnInit {
                 }
             );
     }
-    onRemove(address) {
-        console.log(address)
-        console.log("here to send remove message to nodejs");
-        // console.log(addressInput);
-        var paths = address.split("/")
-        var rpmName = paths[paths.length - 1]
-        console.log(rpmName)
-        var appName = rpmName.split("-")[0];
-        console.log(appName)
-        this.currentRpm = {
+    // onRemove(address) {
+    //     console.log(address)
+    //     console.log("here to send remove message to nodejs");
+    //     // console.log(addressInput);
+    //     var paths = address.split("/")
+    //     var rpmName = paths[paths.length - 1]
+    //     console.log(rpmName)
+    //     var appName = rpmName.split("-")[0];
+    //     console.log(appName)
+    //     this.currentRpm = {
+    //
+    //         path: address,
+    //         package: rpmName,
+    //         appName: appName
+    //     }
+    //     // this.rpms.push(rpmObj);
+    //     // console.log(this.rpms);
+    //     // this.postJsonToLocalBackend(rpmObj,this.urlRpms)
+    //     // this.deactiveRemove()
+    // }
 
-            path: address,
-            package: rpmName,
-            appName: appName
-        }
-        // this.rpms.push(rpmObj);
-        // console.log(this.rpms);
-        // this.postJsonToLocalBackend(rpmObj,this.urlRpms)
-        this.deactiveRemove()
-    }
     postJsonToLocalBackend(obj, url) {
         console.log("here to do the post");
         var parameter = JSON.stringify(obj);
@@ -201,14 +237,15 @@ export class FormComponent implements OnInit {
         this.runCli(cli, version, type)
     }
 
-    checkRpms(){
-      console.log("here to add and install rpm")
+    checkRpms() {
+        console.log("here to add and install rpm")
+        this.status = "loading"
+        this.TabRpmReports = []
+        var version = "1.0";
+        var type = "cli_show";
+        var cli = "show install active ;show install inactive"
 
-      var version = "1.0";
-      var type = "cli_show";
-      var cli = "show install active ;show install inactive"
-
-      this.runCli(cli, version, type)
+        this.runCli(cli, version, type)
     }
 
     deactiveRemove(rpmName) {
@@ -216,12 +253,14 @@ export class FormComponent implements OnInit {
         console.log(rpmName)
         var version = "1.0";
         var type = "cli_conf";
-        rpmName = rpmName.slice(0,-1)
+        rpmName = rpmName.slice(0, -1)
         var cli = "install deactivate " + rpmName + " ;" + "install remove " + rpmName + ".rpm forced"
 
         this.runCli(cli, version, type)
     }
-    onActive(rpmName){}
+    onActive(rpmName) { }
+
+
     runCli(cli, version, type) {
         console.log(cli)
         console.log(version)
@@ -233,13 +272,14 @@ export class FormComponent implements OnInit {
 
             }
         }
-        this.targetSwitch = this.switchDic
+        // this.targetSwitch = this.switchDic
         payload["ins_api"]["version"] = version;
         payload["ins_api"]["type"] = type;
         payload["ins_api"]["chunk"] = "0";
         payload["ins_api"]["sid"] = "1";
         payload["ins_api"]["input"] = cli;
-        payload["ins_api"]["output_format"] = "json";
+        payload["ins_api"]["output_format"] = "json"
+
 
         var info = {};
         info["switches"] = this.targetSwitch;
@@ -247,11 +287,32 @@ export class FormComponent implements OnInit {
         info["rpmName"] = this.currentRpm["appName"]
 
 
-        return this.postJsonToLocalBackend(info, this.urlServer)
+        this.postJsonToLocalBackend(info, this.urlServer)
             .subscribe(
                 data => {
                     console.log(data);
                 }
-            );
+            )
     }
+    onCheckBoxChange(switchInfo) {
+
+        console.log(this.status)
+        this.TabRpmReports = []
+        console.log(this.TabRpmReports)
+        if (switchInfo.id in this.targetSwitchDic) {
+            console.log("delete")
+            delete this.targetSwitchDic[switchInfo.id]
+        }
+        else {
+            console.log("add")
+            this.targetSwitchDic[switchInfo.id] = switchInfo
+        }
+
+        this.targetSwitch = []
+        for (var ind in this.targetSwitchDic) {
+            this.targetSwitch.push(this.targetSwitchDic[ind])
+        }
+        console.log(this.targetSwitch)
+    }
+
 }
