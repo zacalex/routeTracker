@@ -1,0 +1,121 @@
+<div [@routerTransition]>
+    <app-page-header [heading]="'Forms'" [icon]="'fa-edit'"></app-page-header>
+
+    <div class="row">
+        <div class="col-lg-6">
+
+
+            <fieldset class="form-group">
+                <label>RPM Address</label>
+                <input class="form-control" #addressInput>
+                <p class="help-block">Please type in absolute path.</p>
+            </fieldset>
+
+            <button (click)="onAdd(addressInput.value)" class="btn btn-primary">add</button>
+          
+
+
+
+        </div>
+        <div class="col-lg-6">
+            <h4>Switches</h4>
+            <div class="form-group">
+                <label>Checkboxes</label>
+                <div *ngFor="let switch of switchDic" class="checkbox">
+                    <label>
+                        <input type="checkbox" value=""> {{switch.ip}}
+                    </label>
+                </div>
+
+            </div>
+
+
+        </div>
+        <div class="col-lg-6">
+
+        </div>
+    </div>
+    <!-- /.row -->
+
+    <div class="card">
+
+        <div class="card-body">
+            <ngb-tabset>
+                <ngb-tab title="Status">
+
+                    <ng-template ngbTabContent>
+                        <table class="table table-hover table-striped">
+                            <thead>
+                                <tr>
+
+                                    <th>Switch IP</th>
+                                    <th>rpm</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let s of rpmStatus">
+
+                                    <td>{{s.ip}}</td>
+                                    <td>{{s.rpm}}</td>
+                                    <td>{{s.status}}</td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </ng-template>
+                </ngb-tab>
+                <ngb-tab title="Logs">
+
+                    <ng-template ngbTabContent>
+                        <code *ngFor="let log of TabLogs">
+                        <pre>
+                          {{log | json}}
+                        </pre>
+                      </code>
+                    </ng-template>
+                </ngb-tab>
+                <ngb-tab>
+                    <ng-template ngbTabTitle>
+                        <div (click)="checkRpms()">Switches' rpms</div>
+                    </ng-template>
+                    <ng-template ngbTabContent>
+                        <div class="card sm-4" *ngFor="let r of TabRpmReports">
+                            <div class="card-header">{{r.ip}}</div>
+                            <div class="card-body table-responsive">
+                                <table class="table table-hover table-striped" >
+                                    <thead>
+                                        <tr>
+                                            <th>name</th>
+                                            <th>status</th>
+                                            <td>
+                                              action
+                                            </td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let rpm of r.active">
+                                            <td>{{rpm.package_id}}</td>
+                                            <td>active</td>
+                                            <td>
+                                              <button (click)="deactiveRemove(rpm.package_id)" class="btn btn-primary">delete</button>
+                                            </td>
+                                        </tr>
+                                        <tr *ngFor="let rpm of r.inactive">
+                                            <td>{{rpm.package_id}}</td>
+                                            <td>inactive</td>
+                                            <td>
+                                              <button (click)="onActive(rpm.package_id)" class="btn btn-primary">active</button>
+                                            </td>
+                                        </tr>
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </ng-template>
+                </ngb-tab>
+            </ngb-tabset>
+        </div>
+    </div>
+</div>
