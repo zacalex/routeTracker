@@ -100,14 +100,14 @@
                                             <td>{{rpm.package_id}}</td>
                                             <td>active</td>
                                             <td>
-                                                <button (click)="deactiveRemove(rpm.package_id)" class="btn btn-warning">delete</button>
+                                                <button (click)="deactiveRemove(rpm.package_id,r.ip)" class="btn btn-warning">deactive</button>
                                             </td>
                                         </tr>
                                         <tr *ngFor="let rpm of r.inactive">
                                             <td>{{rpm.package_id}}</td>
                                             <td>inactive</td>
                                             <td>
-                                                <button (click)="onActive(rpm.package_id)" class="btn btn-success">active</button>
+                                                <button (click)="onActive(rpm.package_id,r.ip)" class="btn btn-success">active</button>
                                             </td>
                                         </tr>
 

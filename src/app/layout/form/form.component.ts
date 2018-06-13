@@ -48,7 +48,7 @@ export class FormComponent implements OnInit {
         console.log(report['report'].nxapi)
         console.log(report['report'].rpms)
         if (report['report'].rpms.length > 0) {
-            this.TabLogs.push(report['report'].rpms)
+            this.TabLogs.unshift(report['report'].rpms)
             console.log(this.TabLogs)
             for (var i in report['report'].rpms) {
                 var currIp = report['report'].rpms[i].switchIp
@@ -66,7 +66,7 @@ export class FormComponent implements OnInit {
             }
         }
         if (report['report'].nxapi.length > 0) {
-            this.TabLogs.push(report['report'].nxapi)
+            this.TabLogs.unshift(report['report'].nxapi)
             console.log(this.TabLogs)
             var str = ""
             for (var i in report['report'].nxapi) {
@@ -112,6 +112,7 @@ export class FormComponent implements OnInit {
                         || nxapiObj.ins_api.outputs.output[1].clierror.includes("already active")
                     )
                 ) {
+                    this.status = "get somethgin back, please click the tab to load."
                     console.log("installed")
                     for (var ind in this.rpmStatus) {
                         var st = this.rpmStatus[ind]
@@ -120,6 +121,8 @@ export class FormComponent implements OnInit {
                             this.rpmStatus[ind].status = "installed"
                         }
                     }
+                } else {
+                  this.status = "get somethgin back, please click the tab to load."
                 }
             }
         }
@@ -238,8 +241,9 @@ export class FormComponent implements OnInit {
     }
 
     checkRpms() {
-        console.log("here to add and install rpm")
-        this.status = "loading"
+        console.log("here to check rpms on the switches")
+        if(this.targetSwitch.length >0) this.status = "loading"
+        else this.status = "plase choose at least one switch"
         this.TabRpmReports = []
         var version = "1.0";
         var type = "cli_show";
@@ -248,17 +252,47 @@ export class FormComponent implements OnInit {
         this.runCli(cli, version, type)
     }
 
-    deactiveRemove(rpmName) {
+    deactiveRemove(rpmName, ip) {
         console.log("here to remove and deactive rpm")
         console.log(rpmName)
+        console.log(ip)
         var version = "1.0";
         var type = "cli_conf";
         rpmName = rpmName.slice(0, -1)
-        var cli = "install deactivate " + rpmName + " ;" + "install remove " + rpmName + ".rpm forced"
+        var cli = "install deactivate " + rpmName
+        this.TabRpmReports = []
+        this.status = "deactivating"
+        this.targetSwitch = []
+        for(var i in this.switchDic){
+          if(ip == this.switchDic[i].ip){
+            this.targetSwitch.push(this.switchDic[i])
+            break;
+          }
+        }
 
         this.runCli(cli, version, type)
     }
-    onActive(rpmName) { }
+    onActive(rpmName ,ip) {
+      console.log("here to add and install rpm")
+      console.log(rpmName)
+      console.log(ip)
+      this.TabRpmReports = []
+      this.status = "activating"
+      var version = "1.0";
+      var type = "cli_conf";
+      rpmName = rpmName.slice(0, -1)
+      var cli = "install activate " + rpmName
+
+      this.targetSwitch = []
+      for(var i in this.switchDic){
+        if(ip == this.switchDic[i].ip){
+          this.targetSwitch.push(this.switchDic[i])
+          break;
+        }
+      }
+
+      this.runCli(cli, version, type)
+    }
 
 
     runCli(cli, version, type) {
@@ -298,6 +332,7 @@ export class FormComponent implements OnInit {
 
         console.log(this.status)
         this.TabRpmReports = []
+        this.status = "please choose switches and cilick the tab"
         console.log(this.TabRpmReports)
         if (switchInfo.id in this.targetSwitchDic) {
             console.log("delete")
