@@ -5,6 +5,9 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { chart } from 'highcharts';
 import * as Highcharts from 'highcharts';
 import { Client } from 'elasticsearch-browser';
+import { sideTableComponent } from './../components/sideTable/sideTable.component'
+// import { sideTableComponent } from './../components/sideTable/sideTable.component'
+
 
 @Component({
     selector: 'app-rpms',
@@ -17,6 +20,7 @@ export class RpmsComponent implements OnInit {
     //ES
     public chartHeight=35;
     @ViewChild('chartTarget') chartTarget: ElementRef;
+    @ViewChild('switchTable') switchTable: sideTableComponent;
     //elasticsearch
     chart: Highcharts.ChartObject;
     private client: Client;
@@ -36,11 +40,15 @@ export class RpmsComponent implements OnInit {
     TabLogs = []
     TabRpmReports = []
     status = "waiting"
-    ESresult = "here"
+    ESresult = [{
+      key:"none",
+      value:"none"
+    }]
     constructor(private http: HttpClient) {
       if (!this.client) {
           this.connect();
       }
+
      }
 
      private connect() {
@@ -61,10 +69,8 @@ export class RpmsComponent implements OnInit {
 
     ngOnInit() {
       let self=this;
-        this.getConfig().subscribe(data => {
-            console.log(data)
-            this.switchDic = Object.values(data)
-        });
+
+        // console.log(this.switchTable)
 
         setInterval(() => {
             this.http.post(this.urlServer + "report", { "hello": "hello" })
@@ -92,7 +98,16 @@ export class RpmsComponent implements OnInit {
             }).then(function(resp) {
                 console.log(resp)
                 console.log(self.ESresult)
-                self.ESresult = resp
+                self.ESresult = []
+                if(resp.hits.hits[0]._source){
+                  for(let key in resp.hits.hits[0]._source){
+                    self.ESresult.push({
+                      key : key,
+                      value : resp.hits.hits[0]._source[key]
+                    })
+                  }
+                }
+
 
             }, function(err) {
                 console.trace(err.message);
@@ -229,6 +244,7 @@ export class RpmsComponent implements OnInit {
       console.log(vrf)
       var cli = this.constructRouteTrackerCli(protocol,tag,this.ipVer,vrf)
       console.log(cli)
+      this.targetSwitch = this.switchTable.data
       this.preRunCli(cli)
     }
 
@@ -239,6 +255,7 @@ export class RpmsComponent implements OnInit {
       // console.log(vrf)
       var cli = "no " + this.constructRouteTrackerCli(protocol,tag,this.ipVer,vrf)
       console.log(cli)
+      this.targetSwitch = this.switchTable.data
       this.preRunCli(cli)
     }
 
@@ -306,26 +323,5 @@ export class RpmsComponent implements OnInit {
 
     }
 
-    onCheckBoxChange(switchInfo) {
-
-        console.log(this.status)
-        this.TabRpmReports = []
-        this.status = "please choose switches and cilick the tab"
-        console.log(this.TabRpmReports)
-        if (switchInfo.id in this.targetSwitchDic) {
-            console.log("delete")
-            delete this.targetSwitchDic[switchInfo.id]
-        }
-        else {
-            console.log("add")
-            this.targetSwitchDic[switchInfo.id] = switchInfo
-        }
-
-        this.targetSwitch = []
-        for (var ind in this.targetSwitchDic) {
-            this.targetSwitch.push(this.targetSwitchDic[ind])
-        }
-        console.log(this.targetSwitch)
-    }
 
 }

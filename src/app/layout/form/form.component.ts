@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit,ViewChild } from '@angular/core';
 import { routerTransition } from '../../router.animations';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { sideTableComponent } from './../components/sideTable/sideTable.component'
+
 @Component({
     selector: 'app-form',
     templateUrl: './form.component.html',
@@ -9,6 +11,7 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
     animations: [routerTransition()]
 })
 export class FormComponent implements OnInit {
+    @ViewChild('switchTable') switchTable: sideTableComponent;
     httpOptions = {
         headers: new HttpHeaders({ 'Content-Type': 'application/json' })
     };
@@ -19,8 +22,7 @@ export class FormComponent implements OnInit {
     errorsLog = []
     currentRpm = {}
     rpmStatus = []
-    targetSwitch = []
-    targetSwitchDic = {}
+
     TabLogs = []
     TabRpmReports = []
     status = "waiting"
@@ -174,21 +176,22 @@ export class FormComponent implements OnInit {
             appName: appName
         }
 
-        // this.targetSwitch = this.switchDic
-
-        for (var i in this.targetSwitch) {
-            var status = {
-                ip: this.targetSwitch[i].ip,
-                rpm: appName,
-                status: "copying"
-            }
-            this.rpmStatus.push(status)
-        }
-
         var obj = {
             "address": address
         };
-        obj["switches"] = this.targetSwitch
+
+
+        obj["switches"] = this.switchTable.data
+
+        for (var i in obj["switches"]) {
+                    var status = {
+                        ip: obj["switches"][i].ip,
+                        rpm: appName,
+                        status: "copying"
+                    }
+                    this.rpmStatus.unshift(status)
+                }
+
         this.postJsonToLocalBackend(obj, this.urlServer + 'copy')
             .subscribe(
                 data => {
@@ -242,7 +245,7 @@ export class FormComponent implements OnInit {
 
     checkRpms() {
         console.log("here to check rpms on the switches")
-        if(this.targetSwitch.length >0) this.status = "loading"
+        if(this.switchTable.data.length >0) this.status = "loading"
         else this.status = "plase choose at least one switch"
         this.TabRpmReports = []
         var version = "1.0";
@@ -262,13 +265,7 @@ export class FormComponent implements OnInit {
         var cli = "install deactivate " + rpmName
         this.TabRpmReports = []
         this.status = "deactivating"
-        this.targetSwitch = []
-        for(var i in this.switchDic){
-          if(ip == this.switchDic[i].ip){
-            this.targetSwitch.push(this.switchDic[i])
-            break;
-          }
-        }
+
 
         this.runCli(cli, version, type)
     }
@@ -283,13 +280,7 @@ export class FormComponent implements OnInit {
       rpmName = rpmName.slice(0, -1)
       var cli = "install activate " + rpmName
 
-      this.targetSwitch = []
-      for(var i in this.switchDic){
-        if(ip == this.switchDic[i].ip){
-          this.targetSwitch.push(this.switchDic[i])
-          break;
-        }
-      }
+
 
       this.runCli(cli, version, type)
     }
@@ -316,7 +307,7 @@ export class FormComponent implements OnInit {
 
 
         var info = {};
-        info["switches"] = this.targetSwitch;
+        info["switches"] = this.switchTable.data
         info["payload"] = payload;
         info["rpmName"] = this.currentRpm["appName"]
 
@@ -327,27 +318,6 @@ export class FormComponent implements OnInit {
                     console.log(data);
                 }
             )
-    }
-    onCheckBoxChange(switchInfo) {
-
-        console.log(this.status)
-        this.TabRpmReports = []
-        this.status = "please choose switches and cilick the tab"
-        console.log(this.TabRpmReports)
-        if (switchInfo.id in this.targetSwitchDic) {
-            console.log("delete")
-            delete this.targetSwitchDic[switchInfo.id]
-        }
-        else {
-            console.log("add")
-            this.targetSwitchDic[switchInfo.id] = switchInfo
-        }
-
-        this.targetSwitch = []
-        for (var ind in this.targetSwitchDic) {
-            this.targetSwitch.push(this.targetSwitchDic[ind])
-        }
-        console.log(this.targetSwitch)
     }
 
 }

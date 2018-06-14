@@ -1,43 +1,37 @@
 <div [@routerTransition]>
-    <app-page-header [heading]="'Forms'" [icon]="'fa-edit'"></app-page-header>
+    <app-page-header [heading]="'RPM Manager'" [icon]="'fa-edit'"></app-page-header>
 
     <div class="row">
-        <div class="col-lg-6">
+        <div class="col-lg-9">
+            <div class="card mb-3">
+                <div class="card-header">RPM Address</div>
+                <div class="card-body table-responsive">
 
-            <label>RPM Address</label>
-            <input class="form-control" #addressInput>
+                    <input class="form-control" #addressInput>
 
-            <p class="help-block">Please type in absolute path.</p>
-            <button (click)="onAdd(addressInput.value)" class="btn btn-primary">add</button>
-            <p>
+                    <p class="help-block">Please type in absolute path.</p>
+                    <button (click)="onAdd(addressInput.value)" class="btn btn-primary">add</button>
+                    <p>
 
-            </p>
-        </div>
-
-        <div class="col-lg-6">
-            <h4>Switches</h4>
-            <div class="form-group">
-
-                <div *ngFor="let switch of switchDic" class="checkbox">
-                    <label>
-                        <input type="checkbox" value="" (change)="onCheckBoxChange(switch)"> {{switch.ip}}
-                    </label>
+                    </p>
                 </div>
-
             </div>
-
-
         </div>
-        <div class="col-lg-6">
 
+
+        <div class="col-lg-3">
+
+          <app-sideTable #switchTable></app-sideTable>
+        
         </div>
+
     </div>
     <!-- /.row -->
 
 
 
     <div class="card">
-
+      <div class="card-header">Result</div>
         <div class="card-body">
             <ngb-tabset>
                 <ngb-tab title="Status">
