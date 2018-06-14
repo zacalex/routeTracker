@@ -31,6 +31,8 @@ export class TablesComponent implements OnInit {
     getConfig() {
       return this.http.get(this.url);
     }
+
+
     onDeleteConfirm(event) {
       console.log(event.data)
       if (window.confirm('Are you sure you want to delete?')) {
@@ -93,11 +95,20 @@ export class TablesComponent implements OnInit {
         event.confirm.reject();
       }
     }
-    onCreateSwitch(value){
+    onCreateSwitch(id,ip,username,pwd){
+      var value = {
+        "id" : id.value,
+        "ip" : ip.value,
+        "name" : username.value,
+        "pwd" : pwd.value
+      }
       console.log(value);
       var parameter = JSON.stringify(value) ;
       console.log(parameter);
-
+      id.value = ""
+      ip.value = ""
+      username.value = ""
+      pwd.value = ""
       const req = this.http.post(this.url, parameter, this.httpOptions);
       req.subscribe(res => {
         this.updataData()

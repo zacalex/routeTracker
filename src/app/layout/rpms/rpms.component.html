@@ -1,0 +1,181 @@
+<div [@routerTransition]>
+    <app-page-header [heading]="'routeTracker'" [icon]="'fa-edit'"></app-page-header>
+    <!-- <div class="row">
+
+    </div> -->
+    <div class="col-lg-9 d-inline-block">
+        <div class="card mb-3">
+            <div class="card-header">routeTracker setting</div>
+
+            <div class="card-body table-responsive">
+                <table class="table table-hover table-striped">
+                    <thead>
+                        <tr>
+
+                            <th style="width: 10%">Protocol</th>
+                            <th style="width: 10%">tag</th>
+                            <th style="width: 10%">ipVer</th>
+                            <th style="width: 10%">vrf</th>
+
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+
+                            <td>
+                                <input class="form-control" #protocol>
+                            </td>
+                            <td>
+                                <input class="form-control" #tag>
+                            </td>
+                            <td>
+                                <select class="form-control" #ipVersion (change)="ipVerSelected($event)">
+                                      <option value='none'>none</option>
+                                      <option value='ipv4'>ipv4</option>
+                                      <option value='ipv6'>ipv6</option>
+
+                                  </select>
+                            </td>
+                            <td>
+                                <input class="form-control" #vrf>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button (click)="onWatch(protocol.value,tag.value,vrf.value)" class="btn btn-success">Watch</button>
+                            </td>
+                            <td>
+                                <button (click)="onUnWatch(protocol.value,tag.value,vrf.value)" class="btn btn-warning">unWatch</button>
+
+                            </td>
+                        </tr>
+
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-header">result</div>
+            <div class="card-body">
+                <ngb-tabset>
+                    <ngb-tab title="Status">
+
+                        <ng-template ngbTabContent>
+                            <code>
+                        <pre>
+                          {{ESresult | json}}
+                        </pre>
+                      </code>
+
+                            <!-- <table class="table table-hover table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Switch IP</th>
+                                    <th>rpm</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let s of rpmStatus">
+
+                                    <td>{{s.ip}}</td>
+                                    <td>{{s.rpm}}</td>
+                                    <td>{{s.status}}</td>
+                                </tr>
+
+                            </tbody>
+                        </table> -->
+                        </ng-template>
+                    </ngb-tab>
+                    <ngb-tab title="Charts">
+
+                        <ng-template ngbTabContent>
+                            <div class="row">
+                                <div class="col col-sm-12">
+                                    <div class="card mb-3">
+                                        <div class="card-header">
+                                            CoPP Packets
+                                        </div>
+                                        <div class="card-body">
+                                            <div #chartTarget>
+                                                chart target
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </ng-template>
+                    </ngb-tab>
+                    <ngb-tab title="Logs">
+
+                        <ng-template ngbTabContent>
+                            <code *ngFor="let log of TabLogs">
+                        <pre>
+                          {{log | json}}
+                        </pre>
+                      </code>
+                        </ng-template>
+                    </ngb-tab>
+                    <!-- <ngb-tab>
+                    <ng-template ngbTabTitle>
+                        <div (click)="checkRpms()">Switches' rpms</div>
+                    </ng-template>
+                    <ng-template ngbTabContent>
+                        <div class="alert alert-success">
+                            <strong>{{status}}</strong>
+                        </div>
+                        <div class="card sm-4" *ngFor="let r of TabRpmReports">
+                            <div class="card-header">{{r.ip}}</div>
+                            <div class="card-body table-responsive">
+                                <table class="table table-hover table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>name</th>
+                                            <th>status</th>
+                                            <td>
+                                                action
+                                            </td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let rpm of r.active">
+                                            <td>{{rpm.package_id}}</td>
+                                            <td>active</td>
+                                            <td>
+                                                <button (click)="deactiveRemove(rpm.package_id,r.ip)" class="btn btn-warning">deactive</button>
+                                            </td>
+                                        </tr>
+                                        <tr *ngFor="let rpm of r.inactive">
+                                            <td>{{rpm.package_id}}</td>
+                                            <td>inactive</td>
+                                            <td>
+                                                <button (click)="onActive(rpm.package_id,r.ip)" class="btn btn-success">active</button>
+                                            </td>
+                                        </tr>
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </ng-template>
+                </ngb-tab> -->
+                </ngb-tabset>
+            </div>
+        </div>
+
+    </div>
+    <div class="col-lg-3 d-inline-block">
+        <h4>Switches</h4>
+        <div class="form-group">
+
+            <div *ngFor="let switch of switchDic" class="checkbox">
+                <label>
+                    <input type="checkbox" value="" (change)="onCheckBoxChange(switch)"> {{switch.ip}}
+                </label>
+            </div>
+
+        </div>
+    </div>
+</div>
