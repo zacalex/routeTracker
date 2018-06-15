@@ -13,7 +13,7 @@ import {nxapiService} from './../../Service/nxapi.service'
 export class RouteTrackerComponent implements OnInit {
     ipVer = "none"
     rpmName = "routeTracker"
-
+    public isCollapsed = false;
     constructor(private st: switchTableService,
                 private nxapi : nxapiService) {
     }
@@ -54,6 +54,19 @@ export class RouteTrackerComponent implements OnInit {
       if(vrf.length > 0) cli += " " + vrf
       console.log(cli)
       return cli
+    }
+
+    onStart(){
+      var cli = "feature nxsdk ;nxsdk service-name " + this.rpmName
+      console.log("start app" + this.rpmName)
+      console.log(cli)
+      this.nxapi.preRunCli(cli, this.st.getSwitchData(), this.rpmName)
+    }
+    onStop(){
+      var cli = "feature nxsdk ;no nxsdk service-name " + this.rpmName
+      console.log("start app" + this.rpmName)
+      console.log(cli)
+      this.nxapi.preRunCli(cli, this.st.getSwitchData(), this.rpmName)
     }
 
 
