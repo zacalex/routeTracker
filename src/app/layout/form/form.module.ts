@@ -26,6 +26,6 @@ import {localBackendService} from './../Service/localBackend.service'
       MatTabsModule,FormRoutingModule, PageHeaderModule,MatButtonModule, MatCheckboxModule],
     declarations: [FormComponent],
     providers: [ElasticsearchService, nxapiService, localBackendService]
-    
+
 })
 export class FormModule {}

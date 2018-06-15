@@ -24,7 +24,7 @@
         "@angular/platform-browser": "^6.0.0",
         "@angular/platform-browser-dynamic": "^6.0.0",
         "@angular/router": "^6.0.0",
-        "@ng-bootstrap/ng-bootstrap": "^2.0.0",
+        "@ng-bootstrap/ng-bootstrap": "^2.1.1",
         "@ngx-translate/core": "^10.0.1",
         "@ngx-translate/http-loader": "^3.0.1",
         "angular-smart-table": "^2.1.11",

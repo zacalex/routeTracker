@@ -3,12 +3,14 @@ import { Router, NavigationEnd } from '@angular/router';
 import { LocalDataSource, ServerDataSource } from 'ng2-smart-table';
 import { HttpClient } from '@angular/common/http';
 import { switchTableService} from './../../Service/switchTable.service'
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 @Component({
     selector: 'app-sideTable',
     templateUrl: './sideTable.component.html',
     styleUrls: ['./sideTable.component.scss']
 })
 export class sideTableComponent {
+  public isCollapsed = false;
     settings = {
       selectMode: 'multi',
       actions: false,

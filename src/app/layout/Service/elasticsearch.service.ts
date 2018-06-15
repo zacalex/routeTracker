@@ -15,7 +15,8 @@ export class ElasticsearchService {
 
   private connect() {
     this.client = new Client({
-      host: 'http://172.27.252.26:9200',
+      // host: 'http://172.27.252.26:9200',
+      host:'localhost:9200'
       // log: 'trace'
     });
   }

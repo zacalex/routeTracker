@@ -8,6 +8,8 @@ import * as Highcharts from 'highcharts';
 import { sideTableComponent } from './../components/sideTable/sideTable.component'
 // import { sideTableComponent } from './../components/sideTable/sideTable.component'
 import { RouteTrackerComponent } from './routeTracker/routeTracker.component'
+import { RouteTrackerResultComponent } from './routeTracker/routeTrackerResult/routeTrackerResult.component'
+
 import { ElasticsearchService } from './../Service/elasticsearch.service'
 import {localBackendService} from './../Service/localBackend.service'
 
@@ -21,11 +23,11 @@ import {localBackendService} from './../Service/localBackend.service'
 export class RpmsComponent implements OnInit {
 
     //ES
-    public chartHeight = 35;
-    @ViewChild('chartTarget') chartTarget: ElementRef;
-    @ViewChild('switchTable') switchTable: sideTableComponent;
-    //elasticsearch
-    chart: Highcharts.ChartObject;
+    // public chartHeight = 35;
+    // @ViewChild('chartTarget') chartTarget: ElementRef;
+    // @ViewChild('switchTable') switchTable: sideTableComponent;
+    // //elasticsearch
+    // chart: Highcharts.ChartObject;
 
     //backendlogs
 
@@ -33,10 +35,10 @@ export class RpmsComponent implements OnInit {
     // urlServer = 'http://localhost:3001/';
 
 
-    ESresult = [{
-        key: "none",
-        value: "none"
-    }]
+    // ESresult = [{
+    //     key: "none",
+    //     value: "none"
+    // }]
 
     constructor(private lb:localBackendService,
         private es: ElasticsearchService) {
@@ -45,7 +47,7 @@ export class RpmsComponent implements OnInit {
 
 
     ngOnInit() {
-        let self = this;
+        // let self = this;
 
         // console.log(this.switchTable)
 
@@ -60,36 +62,36 @@ export class RpmsComponent implements OnInit {
         //
         // }, 3000);
 
-        setInterval(() => {
-
-            this.es.search({
-                index: 'routetracker_stats_*',
-                body: {
-                    "size": 1,
-                    "sort": {
-                        "timestamp": {
-                            "order": "desc"
-                        }
-                    }
-                }
-            }).then(function(resp) {
-                // console.log(resp)
-                // console.log(self.ESresult)
-                self.ESresult = []
-                if (resp.hits.hits[0]._source) {
-                    for (let key in resp.hits.hits[0]._source) {
-                        self.ESresult.push({
-                            key: key,
-                            value: resp.hits.hits[0]._source[key]
-                        })
-                    }
-                }
-
-
-            }, function(err) {
-                console.trace(err.message);
-            });
-        }, 1000);
+        // setInterval(() => {
+        //
+        //     this.es.search({
+        //         index: 'routetracker_stats_*',
+        //         body: {
+        //             "size": 1,
+        //             "sort": {
+        //                 "timestamp": {
+        //                     "order": "desc"
+        //                 }
+        //             }
+        //         }
+        //     }).then(function(resp) {
+        //         // console.log(resp)
+        //         // console.log(self.ESresult)
+        //         self.ESresult = []
+        //         if (resp.hits.hits[0]._source) {
+        //             for (let key in resp.hits.hits[0]._source) {
+        //                 self.ESresult.push({
+        //                     key: key,
+        //                     value: resp.hits.hits[0]._source[key]
+        //                 })
+        //             }
+        //         }
+        //
+        //
+        //     }, function(err) {
+        //         console.trace(err.message);
+        //     });
+        // }, 1000);
 
 
     }

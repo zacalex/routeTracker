@@ -1,0 +1,95 @@
+<div class="card mb-3">
+    <div class="card-header">result</div>
+    <div class="card-body">
+        <ngb-tabset>
+            <ngb-tab title="Status">
+
+                <ng-template ngbTabContent>
+                  <div class="card-body table-responsive">
+                    <table class="table table-hover table-striped">
+                        <thead>
+                            <tr>
+                                <th>ip prefix</th>
+                                <th>owner</th>
+                                <th>vrfname</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                              <td>
+                                  <input ngModel id="prefix" name="prefix" type="text" placeholder="prefix" class="form-control" #prefix>
+                              </td>
+
+                              <td>
+                                  <input ngModel id="owner" name="owner" type="text" placeholder="owner" class="form-control" #owner>
+                              </td>
+                              <td>
+                                  <input ngModel id="vrfname" name="vrfname" type="text" placeholder="vrfname" class="form-control" #vrfname>
+                              </td>
+
+                              <td>
+                                  <button (click)="onSearch(prefix, owner, vrfname)" class="btn btn-primary center-block">Search</button>
+                              </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      <table class="table table-hover table-striped">
+                          <thead>
+                              <tr>
+                                  <th>ip prefix</th>
+                                  <th>owner</th>
+                                  <th>event</th>
+                                  <th>vrfname</th>
+                                  <th>nh-count</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+
+                            <tr *ngFor="let data of ESresult">
+                              <td>
+                                {{data.key}}
+                              </td>
+                              <td>
+                                {{data.value}}
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+
+
+                  </div>
+
+                </ng-template>
+            </ngb-tab>
+            <ngb-tab title="Charts">
+
+                <ng-template ngbTabContent>
+                    <div class="row">
+                        <div class="col col-sm-12">
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    CoPP Packets
+                                </div>
+                                <div class="card-body">
+                                    <div #chartTarget>
+                                        chart target
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </ng-template>
+            </ngb-tab>
+            <ngb-tab title="Logs">
+
+                <ng-template ngbTabContent>
+                    <code *ngFor="let log of lb.TabLogs">
+            <pre>
+              {{log | json}}
+            </pre>
+          </code>
+                </ng-template>
+            </ngb-tab>
+        </ngb-tabset>
+    </div>
+</div>

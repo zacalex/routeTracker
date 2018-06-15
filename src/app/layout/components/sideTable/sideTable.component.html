@@ -1,12 +1,20 @@
 <div class="card mb-3">
-    <div class="card-header">Switches</div>
-
-    <div class="card-body table-responsive">
-        <ng2-smart-table
-        [settings]="settings"
-        [source]="source"
-        (userRowSelect)="onUserRowSelect($event)"
-        >
-      </ng2-smart-table>
+    <div class="card-header">
+      <button class="btn btn-link" data-toggle="collapse"
+      (click)="isCollapsed = !isCollapsed"
+      [attr.aria-expanded]="!isCollapsed"
+      aria-controls="collapseExample">
+        Switches
+      </button>
+    </div>
+    <div id="collapseExample" [ngbCollapse]="isCollapsed">
+      <div class="card-body table-responsive">
+          <ng2-smart-table
+          [settings]="settings"
+          [source]="source"
+          (userRowSelect)="onUserRowSelect($event)"
+          >
+        </ng2-smart-table>
+      </div>
     </div>
 </div>
