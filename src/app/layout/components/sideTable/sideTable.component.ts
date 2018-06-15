@@ -2,7 +2,7 @@ import { Component, OnInit ,Output, EventEmitter, HostListener} from '@angular/c
 import { Router, NavigationEnd } from '@angular/router';
 import { LocalDataSource, ServerDataSource } from 'ng2-smart-table';
 import { HttpClient } from '@angular/common/http';
-
+import { switchTableService} from './../../Service/switchTable.service'
 @Component({
     selector: 'app-sideTable',
     templateUrl: './sideTable.component.html',
@@ -25,7 +25,8 @@ export class sideTableComponent {
     source: ServerDataSource; // add a property to the component
 // @Output() toggle: EventEmitter<null> = new EventEmitter();
 
-constructor(http: HttpClient) {
+constructor(http: HttpClient,
+            private st : switchTableService) {
   this.source = new ServerDataSource(http, { endPoint: 'http://localhost:3000/switches' });
 }
 
@@ -33,6 +34,7 @@ constructor(http: HttpClient) {
 onUserRowSelect(event){
   console.log(event.selected)
   this.data = event.selected
+  this.st.setSwitch(event.selected)
   // this.toggle.emit(event.selected)
 }
 

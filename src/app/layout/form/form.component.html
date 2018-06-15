@@ -22,7 +22,7 @@
         <div class="col-lg-3">
 
           <app-sideTable #switchTable></app-sideTable>
-        
+
         </div>
 
     </div>
@@ -47,7 +47,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr *ngFor="let s of rpmStatus">
+                                <tr *ngFor="let s of lb.rpmStatus">
 
                                     <td>{{s.ip}}</td>
                                     <td>{{s.rpm}}</td>
@@ -61,7 +61,7 @@
                 <ngb-tab title="Logs">
 
                     <ng-template ngbTabContent>
-                        <code *ngFor="let log of TabLogs">
+                        <code *ngFor="let log of lb.TabLogs">
                         <pre>
                           {{log | json}}
                         </pre>
@@ -74,9 +74,9 @@
                     </ng-template>
                     <ng-template ngbTabContent>
                         <div class="alert alert-success">
-                            <strong>{{status}}</strong>
+                            <strong>{{lb.status}}</strong>
                         </div>
-                        <div class="card sm-4" *ngFor="let r of TabRpmReports">
+                        <div class="card sm-4" *ngFor="let r of lb.TabRpmReports">
                             <div class="card-header">{{r.ip}}</div>
                             <div class="card-body table-responsive">
                                 <table class="table table-hover table-striped">

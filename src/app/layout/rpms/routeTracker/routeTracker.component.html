@@ -1,0 +1,57 @@
+<div class="card mb-3">
+    <div class="card-header">routeTracker setting</div>
+
+    <div class="card-body table-responsive">
+        <table class="table table-hover table-striped">
+            <thead>
+                <tr>
+
+                    <th style="width: 10%">Protocol</th>
+                    <th style="width: 10%">tag</th>
+                    <th style="width: 10%">ipVer</th>
+                    <th style="width: 10%">vrf</th>
+
+
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+
+                    <td>
+                        <input class="form-control" #protocol>
+                    </td>
+                    <td>
+                        <input class="form-control" #tag>
+                    </td>
+                    <td>
+                        <select class="form-control" #ipVersion (change)="ipVerSelected($event)">
+                          <option value='none'>none</option>
+                          <option value='ipv4'>ipv4</option>
+                          <option value='ipv6'>ipv6</option>
+
+                      </select>
+                    </td>
+                    <td>
+                        <input class="form-control" #vrf>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <button (click)="onWatch(protocol.value,tag.value,vrf.value)" class="btn btn-success">Watch</button>
+                    </td>
+                    <td>
+                        <button (click)="onUnWatch(protocol.value,tag.value,vrf.value)" class="btn btn-warning">unWatch</button>
+                    </td>
+                    <td>
+                        <button (click)="onStart()" class="btn btn-primary">Start</button>
+                    </td>
+                    <td>
+                        <button (click)="onStop()" class="btn btn-danger">Stop</button>
+                    </td>
+                </tr>
+
+
+            </tbody>
+        </table>
+    </div>
+</div>

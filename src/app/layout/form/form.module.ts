@@ -10,6 +10,10 @@ import { HttpClientModule } from '@angular/common/http';
 import { sideTableComponent } from './../components/sideTable/sideTable.component';
 import {Ng2SmartTableModule } from 'ng2-smart-table';
 import {SideTableModule} from './../components/sideTable/sideTable.module';
+import {ElasticsearchService} from './../Service/elasticsearch.service'
+import {nxapiService} from './../Service/nxapi.service'
+import {localBackendService} from './../Service/localBackend.service'
+
 
 
 @NgModule({
@@ -20,6 +24,8 @@ import {SideTableModule} from './../components/sideTable/sideTable.module';
       SideTableModule,
       NgbModule.forRoot(),
       MatTabsModule,FormRoutingModule, PageHeaderModule,MatButtonModule, MatCheckboxModule],
-    declarations: [FormComponent]
+    declarations: [FormComponent],
+    providers: [ElasticsearchService, nxapiService, localBackendService]
+    
 })
 export class FormModule {}
