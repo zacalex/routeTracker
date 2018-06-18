@@ -24,29 +24,29 @@ export class RouteTrackerResultComponent implements OnInit {
     }
     data = {}
     latestAction = []
+    emptyResult = {
+        "_source" : {
+            af:"NaN",
+            event:"NaN",
+            nh_address:"NaN",
+            nh_count:"NaN",
+            nh_index:"NaN",
+            nh_metric:"NaN",
+            nh_outintf  :"NaN",
+            nh_preference  :"NaN",
+            nh_segmentid:"NaN",
+            nh_tag:  "NaN",
+            nh_tunnelid  :"NaN",
+            nh_vrfname:"NaN",
+            owner  :"NaN",
+            path:"NaN",
+            prefix:"NaN",
+            swname  :"NaN",
+            time:"NaN",
+            timestamp:  "NaN",
+            vrfname  :  "NaN"
+        }}
     ngOnInit() {
-
-        // setInterval(() => {
-        //
-        //     this.data = {
-        //         index: 'routetracker_tm_vrf_stats_*',
-        //         body: {
-        //
-        //               "query": {
-        //                   "bool": {
-        //                       "filter": [
-        //                           { "term": { "swname": "n9k" } },
-        //                           { "term": { "prefix": "10.1.1.2" } }
-        //                       ]
-        //                   }
-        //               }
-        //
-        //       }
-        //     }
-        //     this.searchForSearch(this.data)
-        //
-        //
-        // }, 1000);
     }
     onSearch(prefix, owner, vrfname) {
         this.ESresult = []
@@ -96,29 +96,7 @@ export class RouteTrackerResultComponent implements OnInit {
             switchInfo["switch"] = switchDetail
             switchInfo["logs"] = resp.hits.hits
             if (switchInfo["logs"].length == 0) {
-                switchInfo["logs"].push({
-                    "_source" : {
-                        af:"NaN",
-                        event:"NaN",
-                        nh_address:"NaN",
-                        nh_count:"NaN",
-                        nh_index:"NaN",
-                        nh_metric:"NaN",
-                        nh_outintf  :"NaN",
-                        nh_preference  :"NaN",
-                        nh_segmentid:"NaN",
-                        nh_tag:  "NaN",
-                        nh_tunnelid  :"NaN",
-                        nh_vrfname:"NaN",
-                        owner  :"NaN",
-                        path:"NaN",
-                        prefix:"NaN",
-                        swname  :"NaN",
-                        time:"NaN",
-                        timestamp:  "NaN",
-                        vrfname  :  "NaN"
-                    }}
-                ])
+                switchInfo["logs"].push(self.emptyResult)
             }
             self.ESresult.unshift(switchInfo)
             self.latestAction.unshift({
