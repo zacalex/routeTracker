@@ -33,8 +33,46 @@
                           </tr>
                         </tbody>
                       </table>
+                      <div class="card" >
+                        <div class="card-header">Latest Action on {{ipPrefix}}</div>
+                        <div class="card-body table-responsive">
+
+                          <table class="table table-hover table-striped" >
+                              <thead>
+                                  <tr>
+                                      <th>switch ip</th>
+                                      <th>switch name</th>
+                                      <th>owner</th>
+                                      <th>event</th>
+                                      <td>time</td>
+                                  </tr>
+                              </thead>
+                              <tbody>
+
+                                <tr *ngFor="let action of latestAction">
+                                  <td>
+                                    {{action.switch.ip}}
+                                  </td>
+                                  <td>
+                                    {{action.switch.nickname}}
+                                  </td>
+                                  <td>
+                                    {{action.data._source.owner}}
+                                  </td>
+                                  <td>
+                                    {{action.data._source.event}}
+                                  </td>
+
+                                  <td>
+                                    {{action.data._source.time}}
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                        </div>
+                      </div>
                       <div class="card" *ngFor="let switchLog of ESresult;  let i = index" [attr.data-index]="i">
-                        <div class="card-header">{{switchLog.switchName}} </div>
+                        <div class="card-header">{{switchLog.switch.nickname}} </div>
                         <div class="card-body table-responsive">
 
                           <table class="table table-hover table-striped" >
@@ -45,13 +83,16 @@
                                       <th>event</th>
                                       <th>vrfname</th>
                                       <th>nh_count</th>
+                                      <td>
+                                        time
+                                      </td>
                                   </tr>
                               </thead>
                               <tbody>
 
                                 <tr *ngFor="let data of switchLog.logs;let ind = index" [attr.data-index]="ind">
                                   <td>
-                                    {{data._source.prefix}} {{ind}}
+                                    {{data._source.prefix}}
                                   </td>
                                   <td>
                                     {{data._source.owner}}
@@ -77,6 +118,9 @@
                                       {{data._source.nh_count}}
                                     </div>
 
+                                  </td>
+                                  <td>
+                                    {{data._source.time}}
                                   </td>
                                 </tr>
                               </tbody>

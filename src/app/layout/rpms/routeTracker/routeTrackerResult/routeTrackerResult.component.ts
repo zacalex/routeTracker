@@ -23,6 +23,7 @@ export class RouteTrackerResultComponent implements OnInit {
         private es: ElasticsearchService) {
     }
     data = {}
+    latestAction = []
     ngOnInit() {
 
         // setInterval(() => {
@@ -49,56 +50,83 @@ export class RouteTrackerResultComponent implements OnInit {
     }
     onSearch(prefix, owner, vrfname) {
         this.ESresult = []
+        this.latestAction = []
         var switches = this.st.getSwitchData()
-        for(var i in switches){
-          var switchname = switches[i].nickname.split(/[.\-_]/)[0]
-          var data = {
-              index: 'routetracker_tm_vrf_stats_*',
-              body: {
-                  "query": {
-                      "bool": {
-                          "filter": [
-                              { "term": { "swname": switchname } },
-                              { "term": { "prefix": prefix.value } }
-                          ]
-                      }
-                  }
+        for (var i in switches) {
+            var switchname = switches[i].nickname.split(/[.\-_]/)[0]
+            var data = {
+                index: 'routetracker_tm_vrf_stats_*',
+                body: {
+                    "query": {
+                        "bool": {
+                            "filter": [
 
-              }
-          }
-          if(owner.value != ""){
-            console.log(owner.value)
-            data.body["query"]["bool"]["filter"].push({ "term": { "owner": owner.value } })
-          }
-          if(vrfname.value != ""){
-            console.log(vrfname.value)
-            data.body["query"]["bool"]["filter"].push({ "term": { "vrfname": vrfname.value } })
-          }
-          console.log(data)
-          this.searchForSearch(switches[i].nickname,data)
+
+                            ]
+                        }
+                    }
+                  "sort": {
+                        "timestamp": {
+                            "order": "desc"
+                        }
+                    }
+
+                }
+            }
+            data.body["query"]["bool"]["filter"].push({ "term": { "swname": switchname } })
+            data.body["query"]["bool"]["filter"].push({ "term": { "prefix": prefix.value } })
+            if (owner.value != "") {
+                console.log(owner.value)
+                data.body["query"]["bool"]["filter"].push({ "term": { "owner": owner.value } })
+            }
+            if (vrfname.value != "") {
+                console.log(vrfname.value)
+                data.body["query"]["bool"]["filter"].push({ "term": { "vrfname": vrfname.value } })
+            }
+            console.log(data)
+            this.searchForSearch(switches[i], data)
         }
     }
 
-    searchForSearch(name, data) {
+    searchForSearch(switchDetail, data) {
         let self = this;
         this.es.search(data).then(function(resp) {
             console.log(resp)
             var switchInfo = {}
-            switchInfo["switchName"] = name
+            switchInfo["switch"] = switchDetail
             switchInfo["logs"] = resp.hits.hits
+            if (switchInfo["logs"].length == 0) {
+                switchInfo["logs"].push({
+                    "_source" : {
+                        af:"NaN",
+                        event:"NaN",
+                        nh_address:"NaN",
+                        nh_count:"NaN",
+                        nh_index:"NaN",
+                        nh_metric:"NaN",
+                        nh_outintf  :"NaN",
+                        nh_preference  :"NaN",
+                        nh_segmentid:"NaN",
+                        nh_tag:  "NaN",
+                        nh_tunnelid  :"NaN",
+                        nh_vrfname:"NaN",
+                        owner  :"NaN",
+                        path:"NaN",
+                        prefix:"NaN",
+                        swname  :"NaN",
+                        time:"NaN",
+                        timestamp:  "NaN",
+                        vrfname  :  "NaN"
+                    }}
+                ])
+            }
             self.ESresult.unshift(switchInfo)
-            // console.log(self.ESresult)
+            self.latestAction.unshift({
+                switch: switchDetail,
+                data: resp.hits.hits[0]
+            })
 
-            // if (resp.hits.hits[0]._source) {
-            //     for (let key in resp.hits.hits[0]._source) {
-            //         self.ESresult.push({
-            //             key: key,
-            //             value: resp.hits.hits[0]._source[key]
-            //         })
-            //     }
-            // }
-
-
+            console.log(self.latestAction)
         }, function(err) {
             console.trace(err.message);
         });
