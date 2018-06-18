@@ -28,6 +28,8 @@
         "@ngx-translate/core": "^10.0.1",
         "@ngx-translate/http-loader": "^3.0.1",
         "angular-smart-table": "^2.1.11",
+        "angularjs-tooltips": "^1.0.5",
+        "bodybuilder": "^2.2.10",
         "chart.js": "^2.7.2",
         "core-js": "^2.5.5",
         "elasticsearch-browser": "^15.0.0",

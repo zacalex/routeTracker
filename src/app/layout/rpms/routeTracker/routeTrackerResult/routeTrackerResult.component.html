@@ -33,28 +33,58 @@
                           </tr>
                         </tbody>
                       </table>
-                      <table class="table table-hover table-striped">
-                          <thead>
-                              <tr>
-                                  <th>ip prefix</th>
-                                  <th>owner</th>
-                                  <th>event</th>
-                                  <th>vrfname</th>
-                                  <th>nh-count</th>
-                              </tr>
-                          </thead>
-                          <tbody>
+                      <div class="card" *ngFor="let switchLog of ESresult;  let i = index" [attr.data-index]="i">
+                        <div class="card-header">{{switchLog.switchName}} </div>
+                        <div class="card-body table-responsive">
 
-                            <tr *ngFor="let data of ESresult">
-                              <td>
-                                {{data.key}}
-                              </td>
-                              <td>
-                                {{data.value}}
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
+                          <table class="table table-hover table-striped" >
+                              <thead>
+                                  <tr>
+                                      <th>ip prefix</th>
+                                      <th>owner</th>
+                                      <th>event</th>
+                                      <th>vrfname</th>
+                                      <th>nh_count</th>
+                                  </tr>
+                              </thead>
+                              <tbody>
+
+                                <tr *ngFor="let data of switchLog.logs;let ind = index" [attr.data-index]="ind">
+                                  <td>
+                                    {{data._source.prefix}} {{ind}}
+                                  </td>
+                                  <td>
+                                    {{data._source.owner}}
+                                  </td>
+                                  <td>
+                                    {{data._source.event}}
+                                  </td>
+                                  <td>
+                                    {{data._source.vrfname}}
+                                  </td>
+                                  <td>
+                                      <ng-template #tipContent>
+
+                                          nh_address : {{data._source.nh_address}}<br />
+                                          nh_count : {{data._source.nh_count}}<br />
+                                          nh_index : {{data._source.nh_index}}<br />
+                                          nh_metric : {{data._source.nh_metric}}<br />
+                                          nh_outintf : {{data._source.nh_outintf}}<br />
+                                          nh_preference : {{data._source.nh_preference}}<br />
+
+                                      </ng-template>
+                                      <div placement="left" [ngbTooltip]="tipContent">
+                                      {{data._source.nh_count}}
+                                    </div>
+
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                        </div>
+                      </div>
+
+
 
 
                   </div>

@@ -16,6 +16,7 @@ import { RouteTrackerResultComponent } from './routeTracker/routeTrackerResult/r
 import {ElasticsearchService} from './../Service/elasticsearch.service'
 import {nxapiService} from './../Service/nxapi.service'
 import {localBackendService} from './../Service/localBackend.service'
+// import {  QueryBuilder} from 'bodybuilder'
 
 @NgModule({
     imports: [CommonModule,SideTableModule,Ng2SmartTableModule, HttpClientModule,NgbModule.forRoot(),MatTabsModule,RpmsRoutingModule, PageHeaderModule,MatButtonModule, MatCheckboxModule],

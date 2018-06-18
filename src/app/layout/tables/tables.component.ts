@@ -4,6 +4,7 @@ import {Injectable} from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { DataSource } from '@angular/cdk/table';
 import { MatTableDataSource, MatSort } from '@angular/material';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
     selector: 'app-tables',
@@ -121,4 +122,5 @@ export class TablesComponent implements OnInit {
         this.updataData()
       });
     }
+
 }
