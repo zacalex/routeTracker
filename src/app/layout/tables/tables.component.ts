@@ -102,7 +102,7 @@ export class TablesComponent implements OnInit {
         "ip" : ip.value,
         "name" : username.value,
         "pwd" : pwd.value,
-        "nickname" : sn
+        "nickname" : sn.value
       }
       console.log(value);
       var parameter = JSON.stringify(value) ;
@@ -110,7 +110,8 @@ export class TablesComponent implements OnInit {
       id.value = ""
       ip.value = ""
       username.value = ""
-      pwd.value = ""
+      pwd.value = "";
+      sn.value = ""
       const req = this.http.post(this.url, parameter, this.httpOptions);
       req.subscribe(res => {
         this.updataData()
