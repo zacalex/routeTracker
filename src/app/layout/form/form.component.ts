@@ -17,7 +17,7 @@ import { switchTableService } from './../Service/switchTable.service';
     animations: [routerTransition()]
 })
 export class FormComponent implements OnInit {
-
+    public isCollapsed = false;
     httpOptions = {
         headers: new HttpHeaders({ 'Content-Type': 'application/json' })
     };
@@ -145,21 +145,21 @@ export class FormComponent implements OnInit {
                         if (i >= self.lb.rpmStatus.length || i < 0) break;
                         if (self.lb.rpmStatus[i].rpm == resp.hits.hits[j]._source.package_id) {
 
-                            if (self.lb.rpmStatus[i].status == 'copying') {
+                            if (self.lb.rpmStatus[i].status == 'Copying Success') {
                                 if (resp.hits.hits[j]._source.status === 'inactive')
-                                    self.lb.rpmStatus[i].status = 'activating';
-                            } else if (self.lb.rpmStatus[i].status == 'deactivating') {
+                                    self.lb.rpmStatus[i].status = 'Activating';
+                                else if(resp.hits.hits[j]._source.status === 'active')
+                                    self.lb.rpmStatus.splice(i, 1);
+                            } else if (self.lb.rpmStatus[i].status == 'Deactivating Success') {
                                 if (resp.hits.hits[j]._source.status === 'inactive') {
-                                    // self.lb.rpmStatus[i].status = 'Success';
+                                    self.lb.rpmStatus.splice(i, 1);
 
                                 }
-                            } else if (self.lb.rpmStatus[i].status == 'activating') {
-                                if (resp.hits.hits[j]._source.status === 'inactive') {
-                                    self.lb.rpmStatus[i].status = 'activating';
+                            } else if (self.lb.rpmStatus[i].status == 'Activating Success') {
+                                if (resp.hits.hits[j]._source.status === 'active') {
+                                    self.lb.rpmStatus.splice(i, 1);
                                 }
 
-                            } else {
-                                self.clearInstalled();
                             }
 
                         }
@@ -202,10 +202,12 @@ export class FormComponent implements OnInit {
                     const status = {
                         ip: obj['switches'][i].ip,
                         rpm: appName,
-                        status: 'copying'
+                        status: 'Copying'
                     };
                     this.lb.pushTabrpmStatus(status);
                 }
+
+
 
         this.postJsonToLocalBackend(obj, this.urlServer + 'copy')
             .subscribe(
@@ -262,12 +264,12 @@ export class FormComponent implements OnInit {
         // rpmName = rpmName.slice(0, -1);
         const cli = 'install deactivate ' + rpmName;
         this.lb.TabRpmReports = [];
-        this.lb.status = 'deactivating';
+        this.lb.status = 'Deactivating';
         this.nxapi.runCli(cli, version, type, this.st.getSwitchData(), rpmName);
         const status = {
             ip: ip,
             rpm: rpmName,
-            status: 'deactivating'
+            status: 'Deactivating'
         };
         this.lb.pushTabrpmStatus(status);
         this.clearInstalled();
@@ -277,7 +279,7 @@ export class FormComponent implements OnInit {
       console.log(rpmName);
       console.log(ip);
       this.lb.TabRpmReports = [];
-      this.lb.status = 'activating';
+      this.lb.status = 'Activating';
       const version = '1.0';
       const type = 'cli_conf';
       // rpmName = rpmName.slice(0, -1);
@@ -286,7 +288,7 @@ export class FormComponent implements OnInit {
         const status = {
             ip: ip,
             rpm: rpmName,
-            status: 'activating'
+            status: 'Activating'
         };
         this.lb.pushTabrpmStatus(status);
         this.clearInstalled();

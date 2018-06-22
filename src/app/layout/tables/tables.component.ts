@@ -98,11 +98,11 @@ export class TablesComponent implements OnInit {
     }
     onCreateSwitch(id,ip,username,pwd, sn){
       var value = {
-        "id" : id.value,
-        "ip" : ip.value,
-        "name" : username.value,
-        "pwd" : pwd.value,
-        "nickname" : sn.value
+        "id" : id.value.trim(),
+        "ip" : ip.value.trim(),
+        "name" : username.value.trim(),
+        "pwd" : pwd.value.trim(),
+        "nickname" : sn.value.trim()
       }
       console.log(value);
       var parameter = JSON.stringify(value) ;
