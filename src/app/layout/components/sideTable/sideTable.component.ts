@@ -27,10 +27,24 @@ export class sideTableComponent {
     source: ServerDataSource; // add a property to the component
 // @Output() toggle: EventEmitter<null> = new EventEmitter();
 
+
+
 constructor(http: HttpClient,
             private st : switchTableService) {
   this.source = new ServerDataSource(http, { endPoint: 'http://localhost:3000/switches' });
 }
+
+    public innerHeight: any;
+    ngOnInit() {
+        this.innerHeight = window.innerHeight;
+    }
+
+    @HostListener('window:resize', ['$event'])
+    onResize(event) {
+        this.innerHeight = window.innerHeight;
+        console.log(this.innerHeight)
+    }
+
 
 // @HostListener('onUserRowSelect')
 onUserRowSelect(event){

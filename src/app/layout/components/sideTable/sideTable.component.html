@@ -1,4 +1,4 @@
-<div class="card mb-3" style="height: auto">
+<div class="card mb-3" >
     <div class="card-header">
       <button class="btn btn-link" data-toggle="collapse"
       (click)="isCollapsed = !isCollapsed"
@@ -9,7 +9,7 @@
     </div>
 
         <div id="collapseExample" [ngbCollapse]="isCollapsed" >
-            <div class="card-body table-responsive scrollableDiv" >
+            <div class="card-body table-responsive scrollableDiv">
                 <ng2-smart-table
                     [settings]="settings"
                     [source]="source"

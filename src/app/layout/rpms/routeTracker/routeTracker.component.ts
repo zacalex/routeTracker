@@ -169,7 +169,7 @@ export class RouteTrackerComponent implements OnInit {
     constructRouteTrackerCli(protocol, tag, ipVer, vrf) {
       let cli = this.rpmName + ' watch owner ' + protocol;
       if (tag.length > 0 && tag !== 0) { cli += ' ' + tag; }
-      if (ipVer !== '' ) { cli += ' ' + ipVer; }
+      if (ipVer !== '' && ipVer !== 'none' ) { cli += ' ' + ipVer; }
       if (vrf.length > 0) { cli += ' vrf ' + vrf; }
       console.log(cli);
       return cli;

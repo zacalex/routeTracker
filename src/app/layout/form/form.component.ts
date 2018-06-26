@@ -54,109 +54,88 @@ export class FormComponent implements OnInit {
                 index: 'rpm_stats_' + swname + '*',
                 body: {
                     'query': {
-                        'constant_score': {
-                            'filter': {
-                                'bool': {
-                                    'must': [
-
-
-                                    ]
-                                }
-                            }
+                        'exists': {
+                            'field' : 'package_id'
                         }
+
                     }
-                    , 'size': 1,
-                    'sort': [
+                    , 'sort': [
                         {
                             'timestamp': {
-                                'order': 'desc'
+                                'order': 'asc'
                             }
                         }
                     ]
+                    ,
+                    'size': 1000
                 }
 
             };
             console.log(data);
-            this.searchForLatestTime(switchList[i], data);
+            this.searchForRpm(switchList[i], data);
         }
     }
-    searchForLatestTime(switchDetail, data) {
-        const self = this;
-        let latestTime;
-        this.es.search(data).then(function(resp) {
-            console.log(resp);
-            if (resp.hits.hits.length == 0) {
-                latestTime = 0;
-            } else {
-                latestTime = resp.hits.hits[0]._source.timestamp;
-            }
-            const swname = switchDetail.nickname;
-            const query = {
-                    index: 'rpm_stats_' + swname + '*',
-                    body: {
-                        'query': {
-                            'constant_score': {
-                                'filter': {
-                                    'bool': {
-                                        'must': [
-                                            {'term': {'timestamp': latestTime}}
 
-                                        ]
-                                    }
-                                }
-                            }
-                        },
-                        'size' : 1000
-
-
-                    }
-                };
-            self.searchForRpm(switchDetail, query);
-
-        }, function(err) {
-            console.log(err.message);
-        });
-
-    }
     searchForRpm(switchDetail, query) {
         const self = this;
         let flag = true;
         this.es.search(query).then(function(resp) {
             console.log(resp.hits.hits);
-            resp.hits.hits.sort(function (a, b) {
-                if (a._source.status === b._source.status) { return a._source.package_id.localeCompare(b._source.package_id); } else if (a._source.status === 'active') { return -1; } else { return 1; }
+            const rpmMap = {};
+            const rpmList = [];
+            resp.hits.hits.forEach(function (ele) {
+                rpmMap[ele._source.package_id] = ele._source.status;
+            });
+            for (const key in rpmMap) {
+                if(rpmMap[key] != 'removed')
+                rpmList.push({
+                    'package_id' : key,
+                    'status' : rpmMap[key]
+                });
+            }
+            rpmList.sort(function (a, b) {
+                if (a.status !== b.status) {
+                    if (a.status === 'active') {
+                        return -1;
+                    } else {
+                        return 1;
+                    }
+                } else {
+                    return a.package_id.localeCompare(b.package_id);
+                }
             });
             for (const i in self.TabRpmReports) {
                 if (self.TabRpmReports[i].switch.ip === switchDetail.ip) {
 
-                    self.TabRpmReports[i].rpms = resp.hits.hits;
+                    self.TabRpmReports[i].rpms = rpmList;
                     flag = false;
                 }
             }
             if (flag) { self.TabRpmReports.unshift({
                 'switch' : switchDetail,
-                rpms : resp.hits.hits
+                rpms : rpmList
             });
             }
-            var i = self.lb.rpmStatus.length
-            while(i--) {
+            let i = self.lb.rpmStatus.length;
+            while (i--) {
                 if (self.lb.rpmStatus[i].ip == switchDetail.ip) {
-                    for (const j in resp.hits.hits) {
-                        if (i >= self.lb.rpmStatus.length || i < 0) break;
-                        if (self.lb.rpmStatus[i].rpm == resp.hits.hits[j]._source.package_id) {
+                    for (const j in rpmList) {
+                        if (i >= self.lb.rpmStatus.length || i < 0) { break; }
+                        if (self.lb.rpmStatus[i].rpm == rpmList[j].package_id) {
 
                             if (self.lb.rpmStatus[i].status == 'Copying Success') {
-                                if (resp.hits.hits[j]._source.status === 'inactive')
+                                if (rpmList[j].status === 'inactive') {
                                     self.lb.rpmStatus[i].status = 'Activating';
-                                else if(resp.hits.hits[j]._source.status === 'active')
+                                } else if (rpmList[j].status === 'active') {
                                     self.lb.rpmStatus.splice(i, 1);
-                            } else if (self.lb.rpmStatus[i].status == 'Deactivating Success') {
-                                if (resp.hits.hits[j]._source.status === 'inactive') {
+                                     }
+                            } else if (self.lb.rpmStatus[i].status == 'Deactivating Success' || self.lb.rpmStatus[i].status == 'Deactivating') {
+                                if (rpmList[j].status === 'inactive') {
                                     self.lb.rpmStatus.splice(i, 1);
 
                                 }
-                            } else if (self.lb.rpmStatus[i].status == 'Activating Success') {
-                                if (resp.hits.hits[j]._source.status === 'active') {
+                            } else if (self.lb.rpmStatus[i].status == 'Activating Success' || self.lb.rpmStatus[i].status == 'Activating') {
+                                if (rpmList[j].status === 'active') {
                                     self.lb.rpmStatus.splice(i, 1);
                                 }
 
@@ -274,7 +253,7 @@ export class FormComponent implements OnInit {
         this.lb.pushTabrpmStatus(status);
         this.clearInstalled();
     }
-    onActive(rpmName , ip) {
+    onActive(switchInfo, rpmName , ip) {
       console.log('here to add and install rpm');
       console.log(rpmName);
       console.log(ip);
@@ -284,7 +263,7 @@ export class FormComponent implements OnInit {
       const type = 'cli_conf';
       // rpmName = rpmName.slice(0, -1);
       const cli = 'install activate ' + rpmName;
-      this.nxapi.runCli(cli, version, type, this.st.getSwitchData(), rpmName);
+      this.nxapi.runCli(cli, version, type, [switchInfo], rpmName);
         const status = {
             ip: ip,
             rpm: rpmName,
@@ -294,7 +273,7 @@ export class FormComponent implements OnInit {
         this.clearInstalled();
     }
 
-    onRemove(rpmName , ip) {
+    onRemove(switchInfo, rpmName , ip) {
         console.log('here to remove rpm');
         console.log(rpmName);
         console.log(ip);
@@ -303,8 +282,8 @@ export class FormComponent implements OnInit {
         const version = '1.0';
         const type = 'cli_conf';
         // rpmName = rpmName.slice(0, -1);
-        const cli = 'install remove ' + rpmName + " forced";
-        this.nxapi.runCli(cli, version, type, this.st.getSwitchData(), rpmName);
+        const cli = 'install remove ' + rpmName + '.rpm forced';
+        this.nxapi.runCli(cli, version, type, [switchInfo], rpmName);
         const status = {
             ip: ip,
             rpm: rpmName,

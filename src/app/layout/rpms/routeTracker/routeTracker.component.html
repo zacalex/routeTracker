@@ -76,7 +76,7 @@
                             </thead>
                             <tbody>
                             <tr *ngFor="let v of r.watchs">
-                                <ng-template [ngIf]="v._source.protocol != ''">
+                                <ng-template [ngIf]="v._source.protocol != null">
                                     <td>{{v._source.protocol}}</td>
                                     <td>{{v._source.tag}}</td>
                                     <td>{{v._source.ipv}}</td>

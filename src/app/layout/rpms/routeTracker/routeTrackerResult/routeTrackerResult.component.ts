@@ -58,9 +58,9 @@ export class RouteTrackerResultComponent implements OnInit {
             if (switches.length <= i) {
                 continue;
             }
-            const switchname = switches[i].nickname.split(/[.\-_]/)[0];
+            const switchname = switches[i].nickname;
             const data = {
-                // index: 'routetracker_tm_vrf_stats_*',
+                index: 'routetracker_tm_vrf_stats_' + switchname + '*',
                 body: {
                     'query': {
                         'bool': {
@@ -75,7 +75,7 @@ export class RouteTrackerResultComponent implements OnInit {
 
                 }
             };
-            data.body['query']['bool']['filter'].push({'term': {'swname': switchname}});
+            // data.body['query']['bool']['filter'].push({'term': {'swname': switchname}});
             data.body['query']['bool']['filter'].push({'term': {'prefix': prefix.value.replace('/', '_')}});
             if (owner.value !== '') {
                 data.body['query']['bool']['filter'].push({'term': {'owner': owner.value}});

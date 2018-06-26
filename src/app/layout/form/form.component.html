@@ -67,11 +67,11 @@
                                                 </thead>
                                                 <tbody>
                                                 <tr *ngFor="let rpm of r.rpms">
-                                                    <ng-template [ngIf]="rpm._source.package_id != ''">
-                                                        <td>{{rpm._source.package_id}}</td>
-                                                        <td>{{rpm._source.status}}</td>
-                                                        <td *ngIf='rpm._source.status == "active"; else activeButton'>
-                                                            <button (click)="deactiveRemove(rpm._source.package_id,r.switch.ip)" class="btn btn-warning">deactive</button>
+                                                    <ng-template [ngIf]="rpm.package_id != ''">
+                                                        <td>{{rpm.package_id}}</td>
+                                                        <td>{{rpm.status}}</td>
+                                                        <td *ngIf='rpm.status == "active"; else activeButton'>
+                                                            <button (click)="deactiveRemove(rpm.package_id,r.switch.ip)" class="btn btn-warning">deactive</button>
                                                         </td>
                                                     </ng-template>
 
@@ -82,8 +82,8 @@
                                                         <td>
 
 
-                                                            <button (click)="onActive(rpm._source.package_id,r.switch.ip)" class="btn btn-success">active</button>
-                                                            <button (click)="onRemove(rpm._source.package_id,r.switch.ip)" class="btn btn-danger">remove</button>
+                                                            <button (click)="onActive(r.switch, rpm.package_id,r.switch.ip)" class="btn btn-success">active</button>
+                                                            <button (click)="onRemove(r.switch, rpm.package_id,r.switch.ip)" class="btn btn-danger">remove</button>
 
                                                         </td>
                                                     </ng-template>
