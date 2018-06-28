@@ -78,6 +78,8 @@ export class localBackendService {
                    console.log(rpmName);
                    for (let ind in this.rpmStatus) {
                        let st = this.rpmStatus[ind];
+                       console.log(st.ip)
+                       console.log(st.rpm)
                        if (st.ip == ip && st.rpm == rpmName) {
                            console.log('found');
                            this.rpmStatus[ind].status += ' Success';

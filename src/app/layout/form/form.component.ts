@@ -87,11 +87,12 @@ export class FormComponent implements OnInit {
                 rpmMap[ele._source.package_id] = ele._source.status;
             });
             for (const key in rpmMap) {
-                if(rpmMap[key] != 'removed')
+                if (rpmMap[key] != 'removed') {
                 rpmList.push({
                     'package_id' : key,
                     'status' : rpmMap[key]
                 });
+                }
             }
             rpmList.sort(function (a, b) {
                 if (a.status !== b.status) {
@@ -129,16 +130,19 @@ export class FormComponent implements OnInit {
                                 } else if (rpmList[j].status === 'active') {
                                     self.lb.rpmStatus.splice(i, 1);
                                      }
-                            } else if (self.lb.rpmStatus[i].status == 'Deactivating Success' || self.lb.rpmStatus[i].status == 'Deactivating') {
+                            } else if (!(self.lb.rpmStatus[i].status == 'Deactivating Success'
+                                || self.lb.rpmStatus[i].status == 'Deactivating')) {
+                                if (self.lb.rpmStatus[i].status == 'Activating Success' || self.lb.rpmStatus[i].status == 'Activating') {
+                                    if (rpmList[j].status === 'active') {
+                                        self.lb.rpmStatus.splice(i, 1);
+                                    }
+
+                                }
+                            } else {
                                 if (rpmList[j].status === 'inactive') {
                                     self.lb.rpmStatus.splice(i, 1);
 
                                 }
-                            } else if (self.lb.rpmStatus[i].status == 'Activating Success' || self.lb.rpmStatus[i].status == 'Activating') {
-                                if (rpmList[j].status === 'active') {
-                                    self.lb.rpmStatus.splice(i, 1);
-                                }
-
                             }
 
                         }

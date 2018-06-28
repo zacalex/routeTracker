@@ -26,6 +26,7 @@ export class RouteTrackerResultComponent implements OnInit {
     }
     data = {};
     latestAction = [];
+    ipPrefix = "";
     emptyResult = {
         '_source' : {
             af : 'NaN',
@@ -53,6 +54,7 @@ export class RouteTrackerResultComponent implements OnInit {
     onSearch(prefix, owner, vrfname) {
         this.ESresult = [];
         this.latestAction = [];
+        this.ipPrefix = prefix.value;
         const switches = this.st.getSwitchData();
         for (const i in switches) {
             if (switches.length <= i) {
