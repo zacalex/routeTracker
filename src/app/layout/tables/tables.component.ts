@@ -100,7 +100,7 @@ export class TablesComponent implements OnInit {
       var value = {
         "id" : id.value.trim(),
         "ip" : ip.value.trim(),
-        "name" : username.value.trim(),
+        "name" : username.value.trim().toLowerCase(),
         "pwd" : pwd.value.trim(),
         "nickname" : sn.value.trim()
       }
