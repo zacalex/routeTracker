@@ -2,10 +2,10 @@
     <app-page-header [heading]="'Charts'" [icon]="'fa-bar-chart-o'"></app-page-header>
 
     <div class="row">
-        <div class="col col-sm-12">
+        <div class="col col-sm-6">
             <div class="card mb-3">
               <div class="card-header">
-                  CoPP Packets
+                  total prefix
               </div>
               <div class="card-body">
                   <div #chartTarget>
@@ -15,7 +15,19 @@
             </div>
         </div>
 
+        <div class="col col-sm-6">
+            <div class="card mb-3">
+                <div class="card-header">
+                    event
+                </div>
+                <div class="card-body">
+                    <div #ipBarChart style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+                </div>
+            </div>
+        </div>
+
     </div>
+
     <div class="row">
         <div class="col col-sm-6">
             <div class="card mb-3">

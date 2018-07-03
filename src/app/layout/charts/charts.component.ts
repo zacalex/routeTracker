@@ -1,8 +1,10 @@
-import { Component, OnInit,ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { routerTransition } from '../../router.animations';
 import { chart } from 'highcharts';
 import * as Highcharts from 'highcharts';
 import { Client } from 'elasticsearch-browser';
+
+import {ElasticsearchService} from '../Service/elasticsearch.service';
 
 @Component({
     selector: 'app-charts',
@@ -12,14 +14,15 @@ import { Client } from 'elasticsearch-browser';
 })
 export class ChartsComponent implements OnInit {
 
-    //highcharts
-    public chartHeight=35;
+    // highcharts
+    public chartHeight = 35;
 
     @ViewChild('chartTarget') chartTarget: ElementRef;
-    //elasticsearch
+    @ViewChild('ipBarChart') ipBarChart: ElementRef;
 
     chart: Highcharts.ChartObject;
-    private client: Client;
+    barChart: Highcharts.ChartObject;
+
     // bar chart
 
 
@@ -37,8 +40,8 @@ export class ChartsComponent implements OnInit {
         '2011',
         '2012'
     ];
-    public barChartType: string = 'bar';
-    public barChartLegend: boolean = true;
+    public barChartType = 'bar';
+    public barChartLegend = true;
 
     public barChartData: any[] = [
         { data: [65, 59, 80, 81, 56, 55, 40], label: 'Series A' },
@@ -52,7 +55,7 @@ export class ChartsComponent implements OnInit {
         'Mail-Order Sales'
     ];
     public doughnutChartData: number[] = [350, 450, 100];
-    public doughnutChartType: string = 'doughnut';
+    public doughnutChartType = 'doughnut';
 
     // Radar
     public radarChartLabels: string[] = [
@@ -68,7 +71,7 @@ export class ChartsComponent implements OnInit {
         { data: [65, 59, 90, 81, 56, 55, 40], label: 'Series A' },
         { data: [28, 48, 40, 19, 96, 27, 100], label: 'Series B' }
     ];
-    public radarChartType: string = 'radar';
+    public radarChartType = 'radar';
 
     // Pie
     public pieChartLabels: string[] = [
@@ -77,7 +80,7 @@ export class ChartsComponent implements OnInit {
         'Mail Sales'
     ];
     public pieChartData: number[] = [300, 500, 100];
-    public pieChartType: string = 'pie';
+    public pieChartType = 'pie';
 
     // PolarArea
     public polarAreaChartLabels: string[] = [
@@ -88,9 +91,9 @@ export class ChartsComponent implements OnInit {
         'Corporate Sales'
     ];
     public polarAreaChartData: number[] = [300, 500, 100, 40, 120];
-    public polarAreaLegend: boolean = true;
+    public polarAreaLegend = true;
 
-    public polarAreaChartType: string = 'polarArea';
+    public polarAreaChartType = 'polarArea';
 
     // lineChart
     public lineChartData: Array<any> = [
@@ -139,8 +142,8 @@ export class ChartsComponent implements OnInit {
             pointHoverBorderColor: 'rgba(148,159,177,0.8)'
         }
     ];
-    public lineChartLegend: boolean = true;
-    public lineChartType: string = 'line';
+    public lineChartLegend = true;
+    public lineChartType = 'line';
 
     // events
     public chartClicked(e: any): void {
@@ -173,124 +176,158 @@ export class ChartsComponent implements OnInit {
          */
     }
 
-    constructor() {
-        if (!this.client) {
-            this.connect();
-        }
+    constructor(private es: ElasticsearchService) {
+
     }
-    private connect() {
-        this.client = new Client({
-            host: 'http://172.27.252.26:9200',
-            log: 'trace'
-        });
-        this.client.ping({
-            requestTimeout: Infinity,
-            body: 'hello JavaSampleApproach!'
-        }).then(function(resp) {
-            console.log(resp);
-        })
-            .catch(function(err) {
-                console.log(err);
-            });
-    }
+
 
     ngOnInit() {
-        let self=this;
-        setInterval(() => {
+        const self = this;
 
-            this.client.search({
-                index: 'lan_info_stats_*',
-                body: {
-                    "size": 2,
-                    "sort": {
-                        "timestamp": {
-                            "order": "desc"
-                        }
-                    }
-                }
-            }).then(function(resp) {
-                var hits = resp.hits.hits;
+        setInterval(function () {
+            // console.log('here to update point');
+            // console.log(self.chart);
+            self.getCount();
 
-                // console.log(hits.length);
-
-                var x = (new Date()).getTime(), // current time
-                    dropped = -1,
-                    confirmed = -1;
-                for (var i in hits) {
-                    // console.log(hits[i]["_source"]["CoPP_dropped"]);
-                    if (hits[i]["_source"]["CoPP_dropped"] != null && dropped == -1) dropped = hits[i]["_source"]["CoPP_dropped"]
-                    if (hits[i]["_source"]["CoPP_conformed"] != null && confirmed == -1) confirmed = hits[i]["_source"]["CoPP_conformed"]
-                    // console.log("check comfirm",i,dropped)
-
-                }
-                // console.log(self)
-                self.chart.series[0].addPoint([x, dropped], true, true);
-                self.chart.series[1].addPoint([x, confirmed], true, true);
-                // console.log(self.chart)
-
-            }, function(err) {
-                console.trace(err.message);
-            });
         }, 1000);
     }
     ngAfterViewInit() {
-    const options: Highcharts.Options = {
-      chart: {
-        type: 'spline'
-      },
-      title: {
-        text: ' '
-      },
-      xAxis: {
-        type: 'datetime',
-        tickPixelInterval: 150
-      },
-      yAxis: {
-        title: {
-          text: ' '
-        }
-      },
-      tooltip: {
-        formatter: function () {
-          return '<b>' + this.series.name + '</b><br/>' +
-            Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
-            Highcharts.numberFormat(this.y, 2);
-        }
-      },
-      series: [{
-        name: 'dropped packet',
-        data: (function () {
-          // generate an array of random data
-          var data = [],
-            time = (new Date()).getTime(),
-            i;
+        this.initLineChart();
+        this.initBarChart();
+  }
+  initLineChart() {
+        const self = this;
+      const options: Highcharts.Options = {
+          chart: {
+              type: 'spline'
+          },
+          global: {
+              useUTC : false
+          },
+          title: {
+              text: ' '
+          },
+          xAxis: {
+              type: 'datetime',
+              tickPixelInterval: 150
+          },
+          yAxis: {
+              title: {
+                  text: ' '
+              }
+          },
+          legend: {
+              enabled: false
+          },
+          exporting: {
+              enabled:false
+          },
+          tooltip: {
+              formatter: function () {
+                  return '<b>' + this.series.name + '</b><br/>' +
+                      Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
+                      Highcharts.numberFormat(this.y, 2);
+              }
+          },
+          series: [{
+              name: 'dropped packet',
+              data: (function () {
+                  // generate an array of random data
+                  let data = [],
+                      time = (new Date()).getTime(),
+                      i;
 
-          for (i = -19; i <= 0; i += 1) {
-            data.push({
-              x: time + i * 1000,
-              y: 0
-            });
-          }
-          return data;
-        }())
-      },{
-        name: 'confirmed packet',
-        data: (function () {
-          // generate an array of random data
-          var data = [],
-            time = (new Date()).getTime(),
-            i;
+                  for (i = -19; i <= 0; i += 1) {
+                      data.push({
+                          x: time + i * 1000,
+                          y: 0
+                      });
+                  }
+                  return data;
+              }())
+          }]
+      };
+      this.chart = chart(this.chartTarget.nativeElement, options);
+  }
+  getCount() {
+        const self = this;
+        // console.log('here to use es get count');
+        const data = {
+              index: 'routetracker_watchdic_stats_' + 'n9k-14' + '*',
+              body: {
+                  'size': 1,
+                  'sort': [
+                      {
+                          'timestamp': {
+                              'order': 'desc'
+                          }
+                      }
+                  ]
+              }
 
-          for (i = -19; i <= 0; i += 1) {
-            data.push({
-              x: time + i * 1000,
-              y: 0
-            });
-          }
-          return data;
-        }())
-      }]
-    };
-    this.chart = chart(this.chartTarget.nativeElement, options);
+        };
+        this.es.search(data).then(function (resp) {
+            // console.log(resp.hits.hits[0]._source['cnt-total']);
+            const x = (new Date()).getTime();
+            const y = resp.hits.hits[0]._source['cnt-total'];
+            console.log(y);
+            console.log('new point');
+            self.chart.series[0].addPoint([x, y], true, true);
+        }, function (err) {
+            console.log(err.message);
+        });
+
+
+  }
+  initBarChart() {
+      const options: Highcharts.Options = {
+          chart: {
+              type: 'column'
+          },
+          title: {
+              text: 'changing ip'
+          },
+          xAxis: {
+              type: 'datetime',
+              tickPixelInterval: 150
+          },
+          yAxis: {
+              title: {
+                  text: ' '
+              }
+          },
+          tooltip: {
+              headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+              pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+              '<td style="padding:0"><b>{point.y:.1f} mm</b></td></tr>',
+              footerFormat: '</table>',
+              shared: true,
+              useHTML: true
+          },
+          plotOptions: {
+              column: {
+                  pointPadding: 0.2,
+                  borderWidth: 0
+              }
+          },
+          series: [{
+              name: 'Tokyo',
+              data: [49.9, 71.5, 106.4, 129.2, 144.0, 176.0, 135.6, 148.5, 216.4, 194.1, 95.6, 54.4]
+
+          }, {
+              name: 'New York',
+              data: [83.6, 78.8, 98.5, 93.4, 106.0, 84.5, 105.0, 104.3, 91.2, 83.5, 106.6, 92.3]
+
+          }, {
+              name: 'London',
+              data: [48.9, 38.8, 39.3, 41.4, 47.0, 48.3, 59.0, 59.6, 52.4, 65.2, 59.3, 51.2]
+
+          }, {
+              name: 'Berlin',
+              data: [42.4, 33.2, 34.5, 39.7, 52.6, 75.5, 57.4, 60.4, 47.6, 39.1, 46.8, 51.1]
+
+          }]
+      };
+      this.barChart = chart(this.ipBarChart.nativeElement, options);
   }
 }
