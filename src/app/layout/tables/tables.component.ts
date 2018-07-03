@@ -20,13 +20,13 @@ export class TablesComponent implements OnInit {
     };
 
     url = 'http://localhost:3000/switches/';
-    constructor(private http:HttpClient) {}
-    data = []
+    constructor(private http: HttpClient) {}
+    data = [];
 
     ngOnInit() {
       this.getConfig().subscribe(data => {
-        console.log(data)
-        this.data= Object.values(data)
+        console.log(data);
+        this.data = Object.values(data);
     });
     }
     getConfig() {
@@ -35,7 +35,7 @@ export class TablesComponent implements OnInit {
 
 
     onDeleteConfirm(event) {
-      console.log(event.data)
+      console.log(event.data);
       if (window.confirm('Are you sure you want to delete?')) {
         event.confirm.resolve();
 
@@ -51,10 +51,10 @@ export class TablesComponent implements OnInit {
         event.confirm.reject();
       }
     }
-    updataData(){
+    updataData() {
       this.getConfig().subscribe(data => {
-          console.log(data)
-          this.data= Object.values(data)
+          console.log(data);
+          this.data = Object.values(data);
       });
     }
     onSaveConfirm(event) {
@@ -67,7 +67,7 @@ export class TablesComponent implements OnInit {
         req.subscribe(res => {
           console.log(res);
 
-          var parameter = JSON.stringify(event.newData) ;
+          let parameter = JSON.stringify(event.newData) ;
           console.log(parameter);
 
           const req = this.http.post(this.url, parameter, this.httpOptions);
@@ -85,7 +85,7 @@ export class TablesComponent implements OnInit {
       if (window.confirm('Are you sure you want to create?')) {
         event.confirm.resolve(event.newData);
 
-        var parameter = JSON.stringify(event.newData) ;
+        let parameter = JSON.stringify(event.newData) ;
         console.log(parameter);
 
         const req = this.http.post(this.url, parameter, this.httpOptions);
@@ -96,31 +96,31 @@ export class TablesComponent implements OnInit {
         event.confirm.reject();
       }
     }
-    onCreateSwitch(id,ip,username,pwd, sn){
-      var value = {
-        "id" : id.value.trim(),
-        "ip" : ip.value.trim(),
-        "name" : username.value.trim().toLowerCase(),
-        "pwd" : pwd.value.trim(),
-        "nickname" : sn.value.trim()
-      }
+    onCreateSwitch(id, ip, username, pwd, sn) {
+      let value = {
+        'id' : id.value.trim(),
+        'ip' : ip.value.trim(),
+        'name' : username.value.trim().toLowerCase(),
+        'pwd' : pwd.value.trim(),
+        'nickname' : sn.value.trim()
+      };
       console.log(value);
-      var parameter = JSON.stringify(value) ;
+      let parameter = JSON.stringify(value) ;
       console.log(parameter);
-      id.value = ""
-      ip.value = ""
-      username.value = ""
-      pwd.value = "";
-      sn.value = ""
+      id.value = '';
+      ip.value = '';
+      username.value = '';
+      pwd.value = '';
+      sn.value = '';
       const req = this.http.post(this.url, parameter, this.httpOptions);
       req.subscribe(res => {
-        this.updataData()
+        this.updataData();
       });
     }
-    onRemoveSwitch(value){
+    onRemoveSwitch(value) {
       const req = this.http.delete(this.url + value.id);
       req.subscribe(res => {
-        this.updataData()
+        this.updataData();
       });
     }
 

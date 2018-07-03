@@ -1,9 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { routerTransition } from '../../../router.animations';
 import { switchTableService } from './../../Service/switchTable.service';
 import {nxapiService} from './../../Service/nxapi.service';
 import { ElasticsearchService } from './../../Service/elasticsearch.service';
+import {localBackendService} from '../../Service/localBackend.service';
+import { chart } from 'highcharts';
+import * as Highcharts from 'highcharts';
 
 @Component({
     selector: 'app-routeTracker',
@@ -16,21 +19,74 @@ export class RouteTrackerComponent implements OnInit {
     rpmName = 'routeTracker';
     watchInfo = [];
     public isCollapsed = false;
+    // highcharts
+    public chartHeight = 35;
+    @ViewChild('chartTargetIp') chartTarget: ElementRef;
+    chart: Highcharts.ChartObject;
+
     constructor(private st: switchTableService,
                 private nxapi: nxapiService,
-                private es: ElasticsearchService) {
+                private es: ElasticsearchService,
+                private lb: localBackendService) {
     }
 
     ngOnInit() {
         setInterval(() => {
-            this.getWatchReport();
-
+            // this.getWatchReport();
+            // console.log(this.chartTarget)
+            // this.getIpReport();
         }, 10000);
     }
     ipVerSelected(event) {
       console.log(event);
       this.ipVer = event.target.value;
 
+    }
+    getIpReport() {
+        console.log("search");
+        const switchList = this.st.getSwitchData();
+        for (const i in switchList ) {
+            // const swname = switchList[i].nickname.split('-')[0];
+            const swname = switchList[i].nickname;
+            const data = {
+                index: 'routetracker_tm_vrf_stats_' + swname + '*',
+                body: {
+                    'query': {
+                        'bool': {
+                            'must':
+                                {
+                                    'exists': {
+                                        'field' : 'event'
+                                    }
+                                },
+                            'filter': {
+                                'range': {
+                                    'timestamp': {
+                                        'gte': 'now-2m',
+                                        'lte': 'now'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    , 'size': 1000
+                }
+
+            };
+            console.log(data);
+            this.searchLastIpReport(switchList[i], data);
+        }
+    }
+    searchLastIpReport(switchDetail, data){
+        const self = this;
+        let latestTime;
+        this.es.search(data).then(function(resp) {
+            console.log(resp);
+
+
+        }, function(err) {
+            console.log(err.message);
+        });
     }
     getWatchReport() {
         const switchList = this.st.getSwitchData();
@@ -114,12 +170,10 @@ export class RouteTrackerComponent implements OnInit {
             resp.hits.hits.sort(function (a, b) {
                 return a._source.protocol.localeCompare(b._source.protocol);
             });
-            for(const i in resp.hits.hits){
-                if(resp.hits.hits[i]._source.af === 1)resp.hits.hits[i]._source["ipv"] = "ipv6";
-                else if (resp.hits.hits[i]._source.af === 0)resp.hits.hits[i]._source["ipv"] = "ipv4";
-                else resp.hits.hits[i]._source["ipv"] = "";
+            for (const i in resp.hits.hits) {
+                if (resp.hits.hits[i]._source.af === 1) {resp.hits.hits[i]._source['ipv'] = 'ipv6'; } else if (resp.hits.hits[i]._source.af === 0) {resp.hits.hits[i]._source['ipv'] = 'ipv4'; } else { resp.hits.hits[i]._source['ipv'] = ''; }
 
-                if(resp.hits.hits[i]._source.tag === 0) resp.hits.hits[i]._source.tag = ""
+                if (resp.hits.hits[i]._source.tag === 0) { resp.hits.hits[i]._source.tag = ''; }
             }
             for (const i in self.watchInfo) {
                 if (self.watchInfo[i].switch.ip === switchDetail.ip) {
@@ -154,10 +208,10 @@ export class RouteTrackerComponent implements OnInit {
     }
 
     onUnWatch(switchInfo, protocol, tag, vrf, af) {
-      console.log(protocol)
-      console.log(tag)
-      console.log(this.ipVer)
-      console.log(vrf)
+      console.log(protocol);
+      console.log(tag);
+      console.log(this.ipVer);
+      console.log(vrf);
       // let ip = '';
       // if (af === 1) { ip = 'ipv6'; } else if (af === 0) { ip = 'ipv4'; }
       const cli = 'no ' + this.constructRouteTrackerCli(protocol, tag, af, vrf);
@@ -188,6 +242,81 @@ export class RouteTrackerComponent implements OnInit {
       this.nxapi.preRunCli(cli, this.st.getSwitchData(), this.rpmName);
     }
 
+    initChart() {
+        this.getIpReport();
+        console.log(this.chartTarget);
+        const options: Highcharts.Options = {
+            chart: {
+                type: 'spline'
+            },
+            title: {
+                text: ' '
+            },
+            xAxis: {
+                type: 'datetime',
+                tickPixelInterval: 150
+            },
+            yAxis: {
+                title: {
+                    text: ' '
+                }
+            },
+            tooltip: {
+                formatter: function () {
+                    return '<b>' + this.series.name + '</b><br/>' +
+                        Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
+                        Highcharts.numberFormat(this.y, 2) + '<br/>' +
+                        Highcharts.numberFormat(this.x);
+                }
+            },
+            plotOptions: {
+                series: {
+                    cursor: 'pointer',
+                    events: {
+                        click: function (event) {
+                            console.log(event.point.x);
+                            console.log(Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', event.point.x));
 
+                        }
+                    }
+                }
+            },
+            series: [ {
+                name: 'dropped packet',
+                data: (function () {
+                    // generate an array of random data
+                    let data = [],
+                        time = (new Date()).getTime(),
+                        i;
+
+                    for (i = -19; i <= 0; i += 1) {
+                        data.push({
+                            x: time + i * 1000,
+                            y: 0
+                        });
+                    }
+                    return data;
+                }())
+            }, {
+                name: 'confirmed packet',
+                data: (function () {
+                    // generate an array of random data
+                    let data = [],
+                        time = (new Date()).getTime(),
+                        i;
+
+                    for (i = -19; i <= 0; i += 1) {
+                        data.push({
+                            x: time + i * 1000,
+                            y: 0
+                        });
+                    }
+                    return data;
+                }())
+            }]
+        };
+        console.log(this.chartTarget);
+        this.chart = chart(this.chartTarget.nativeElement, options);
+    }
 
 }
