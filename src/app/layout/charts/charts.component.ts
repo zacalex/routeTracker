@@ -189,17 +189,100 @@ export class ChartsComponent implements OnInit {
             // console.log(self.chart);
             self.getCount();
 
-        }, 1000);
+        }, 2000);
     }
     ngAfterViewInit() {
         this.initLineChart();
         this.initBarChart();
+        const query = {
+            index: 'routetracker_tm_vrf_stats_' + 'n9k-14' + '*',
+            body: {
+                'query': {
+                    'bool': {
+                        'must':
+                            {
+                                'exists': {
+                                    'field' : 'cnt-total'
+                                }
+                            },
+                        'filter': {
+                            'range': {
+                                'timestamp': {
+                                    'gte': 'now-30m',
+                                    'lte': 'now'
+                                }
+                            }
+                        }
+                    }
+                }
+                , 'size': 10,
+                'sort': [
+                    {
+                        'timestamp': {
+                            'order': 'desc'
+                        }
+                    }
+                ]
+            }
+
+        };
+        const self = this;
+        this.es.search(query).then(function (resp) {
+            console.log(resp.hits.hits);
+            var data = [];
+            resp.hits.hits.forEach(function (ele) {
+                const x = parseInt(ele._source.timestamp);
+                const y = ele._source['cnt-total'];
+                console.log(x, y);
+                data.push({
+                    x: x,
+                    y: y
+                });
+            });
+            self.chart.series[0].setData(data.reverse(), true);
+
+        }, function (err) {
+            console.log(err.message);
+        });
   }
   initLineChart() {
         const self = this;
       const options: Highcharts.Options = {
           chart: {
-              type: 'spline'
+              events: {
+                  selection: function (event) {
+                      let text,
+                          label;
+                      if (event.xAxis) {
+                          text = 'min: ' + Highcharts.numberFormat(event.xAxis[0].min, 2) + ', max: ' + Highcharts.numberFormat(event.xAxis[0].max, 2);
+                          console.log('selection');
+                          const gte = event.xAxis[0].min;
+                          const lte = event.xAxis[0].max;
+                          console.log(gte);
+                          console.log(lte);
+                          self.updateEventChart(gte, lte);
+
+                      } else {
+                          text = 'Selection reset';
+                      }
+                      label = this.renderer.label(text, 100, 120)
+                          .attr({
+                              fill: Highcharts.getOptions().colors[0],
+                              padding: 10,
+                              r: 5,
+                              zIndex: 8
+                          })
+                          .css({
+                              color: '#FFFFFF'
+                          })
+                          .add();
+
+                      setTimeout(function () {
+                          label.fadeOut();
+                      }, 1000);
+                  }
+              },
+              zoomType: 'x'
           },
           global: {
               useUTC : false
@@ -220,41 +303,112 @@ export class ChartsComponent implements OnInit {
               enabled: false
           },
           exporting: {
-              enabled:false
+              enabled: false
           },
           tooltip: {
               formatter: function () {
+                  // console.log(this.x)
                   return '<b>' + this.series.name + '</b><br/>' +
                       Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
                       Highcharts.numberFormat(this.y, 2);
+              }
+          },
+          plotOptions: {
+              series: {
+                  cursor: 'pointer',
+                  point: {
+                      events: {
+                          click: function (event) {
+                              console.log(event);
+                              const currentTime = event.point.options.x;
+                              console.log(currentTime);
+                              const id = event.point.index;
+                              const preTime = self.chart.series[0].data[id - 1].options.x;
+                              console.log(preTime);
+                              self.updateEventChart(preTime, currentTime);
+                          }
+                      }
+                  }
               }
           },
           series: [{
               name: 'dropped packet',
               data: (function () {
                   // generate an array of random data
-                  let data = [],
-                      time = (new Date()).getTime(),
-                      i;
 
-                  for (i = -19; i <= 0; i += 1) {
-                      data.push({
-                          x: time + i * 1000,
-                          y: 0
-                      });
-                  }
+                  // console.log('here to use es get count');
+
+                  const data = [];
+                  console.log(data);
                   return data;
               }())
           }]
       };
       this.chart = chart(this.chartTarget.nativeElement, options);
   }
+  updateEventChart(pre , curr) {
+      const self = this;
+      // console.log('here to use es get count');
+      const data = {
+          index: 'routetracker_tm_vrf_stats_' + 'n9k-14' + '*',
+          body: {'query': {
+                  'bool': {
+                      'must':
+                          {
+                              'exists': {
+                                  'field' : 'event'
+                              }
+                          },
+                      'filter': {
+                          'range': {
+                              'timestamp': {
+                                  'gte': pre,
+                                  'lte': curr
+                              }
+                          }
+                      }
+                  }
+              }
+              , 'size': 1000
+          }
+
+      };
+      this.es.search(data).then(function (resp) {
+          console.log(resp.hits.hits);
+          let addDic = [];
+          let deleteDic = [];
+          resp.hits.hits.forEach(function (ele) {
+              if (ele._source.event === 'Add') {
+                  addDic.push(ele);
+              } else if (ele._source.event === 'Delete') {
+                  deleteDic.push(ele);
+              }
+          });
+          self.barChart.series[0].setData([addDic.length + deleteDic.length]);
+          self.barChart.series[1].setData([addDic.length]);
+          self.barChart.series[2].setData([deleteDic.length], true);
+
+
+      }, function (err) {
+          console.log(err.message);
+      });
+  }
   getCount() {
         const self = this;
         // console.log('here to use es get count');
         const data = {
-              index: 'routetracker_watchdic_stats_' + 'n9k-14' + '*',
+              index: 'routetracker_tm_vrf_stats_' + 'n9k-14' + '*',
               body: {
+                  'query': {
+                      'bool': {
+                          'must':
+                              {
+                                  'exists': {
+                                      'field' : 'cnt-total'
+                                  }
+                              }
+                      }
+                  },
                   'size': 1,
                   'sort': [
                       {
@@ -267,12 +421,22 @@ export class ChartsComponent implements OnInit {
 
         };
         this.es.search(data).then(function (resp) {
-            // console.log(resp.hits.hits[0]._source['cnt-total']);
-            const x = (new Date()).getTime();
+            // console.log(resp.hits.hits[0]);
+            const x = parseInt(resp.hits.hits[0]._source['timestamp']);
+            const z = resp.hits.hits[0]._source['timestamp'];
             const y = resp.hits.hits[0]._source['cnt-total'];
+
+
+            console.log(x);
             console.log(y);
-            console.log('new point');
-            self.chart.series[0].addPoint([x, y], true, true);
+            const points = self.chart.series[0].data;
+            // console.log(points[points.length - 1]);
+            const lastPoint = points[points.length - 1];
+            if (points.length === 0 || lastPoint.options.x < x) {
+                self.chart.series[0].addPoint([x, y], true, false);
+                console.log('add new point at', x);
+            }
+
         }, function (err) {
             console.log(err.message);
         });
@@ -288,8 +452,7 @@ export class ChartsComponent implements OnInit {
               text: 'changing ip'
           },
           xAxis: {
-              type: 'datetime',
-              tickPixelInterval: 150
+              categories: ['n9k-14']
           },
           yAxis: {
               title: {
@@ -311,21 +474,15 @@ export class ChartsComponent implements OnInit {
               }
           },
           series: [{
-              name: 'Tokyo',
-              data: [49.9, 71.5, 106.4, 129.2, 144.0, 176.0, 135.6, 148.5, 216.4, 194.1, 95.6, 54.4]
+              name: 'total',
+              data: [30]
 
           }, {
-              name: 'New York',
-              data: [83.6, 78.8, 98.5, 93.4, 106.0, 84.5, 105.0, 104.3, 91.2, 83.5, 106.6, 92.3]
-
+              name: 'add',
+              data: [10]
           }, {
-              name: 'London',
-              data: [48.9, 38.8, 39.3, 41.4, 47.0, 48.3, 59.0, 59.6, 52.4, 65.2, 59.3, 51.2]
-
-          }, {
-              name: 'Berlin',
-              data: [42.4, 33.2, 34.5, 39.7, 52.6, 75.5, 57.4, 60.4, 47.6, 39.1, 46.8, 51.1]
-
+              name: 'delete',
+              data: [20]
           }]
       };
       this.barChart = chart(this.ipBarChart.nativeElement, options);
