@@ -7,9 +7,10 @@ import { ChartsComponent } from './charts.component';
 import { PageHeaderModule } from '../../shared';
 import { HttpClientModule } from '@angular/common/http';
 import {ElasticsearchService} from './../Service/elasticsearch.service';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 @NgModule({
-    imports: [CommonModule, HttpClientModule,Ng2Charts, ChartsRoutingModule, PageHeaderModule],
+    imports: [NgbModule.forRoot(),CommonModule, HttpClientModule,Ng2Charts, ChartsRoutingModule, PageHeaderModule],
     declarations: [ChartsComponent],
     providers:[ElasticsearchService]
 })

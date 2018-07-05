@@ -22,8 +22,11 @@ export class ChartsComponent implements OnInit {
 
     chart: Highcharts.ChartObject;
     barChart: Highcharts.ChartObject;
+    EventColors = ['#00FF00', '#FF0000'];
 
+    ESresult = [];
     // bar chart
+
 
 
     public barChartOptions: any = {
@@ -229,17 +232,13 @@ export class ChartsComponent implements OnInit {
         const self = this;
         this.es.search(query).then(function (resp) {
             console.log(resp.hits.hits);
-            var data = [];
-            resp.hits.hits.forEach(function (ele) {
+            const data = [];
+            resp.hits.hits.reverse().forEach(function (ele) {
                 const x = parseInt(ele._source.timestamp);
                 const y = ele._source['cnt-total'];
-                console.log(x, y);
-                data.push({
-                    x: x,
-                    y: y
-                });
+                self.updateData(self.chart, 0, x, y);
             });
-            self.chart.series[0].setData(data.reverse(), true);
+            //self.chart.series[0].setData(data.reverse(), true);
 
         }, function (err) {
             console.log(err.message);
@@ -348,6 +347,7 @@ export class ChartsComponent implements OnInit {
   }
   updateEventChart(pre , curr) {
       const self = this;
+      this.ESresult = [];
       // console.log('here to use es get count');
       const data = {
           index: 'routetracker_tm_vrf_stats_' + 'n9k-14' + '*',
@@ -369,14 +369,21 @@ export class ChartsComponent implements OnInit {
                       }
                   }
               }
-              , 'size': 1000
+              , 'size': 1000,
+              'sort': [
+                  {
+                      'timestamp': {
+                          'order': 'desc'
+                      }
+                  }
+              ]
           }
 
       };
       this.es.search(data).then(function (resp) {
           console.log(resp.hits.hits);
-          let addDic = [];
-          let deleteDic = [];
+          const addDic = [];
+          const deleteDic = [];
           resp.hits.hits.forEach(function (ele) {
               if (ele._source.event === 'Add') {
                   addDic.push(ele);
@@ -387,7 +394,12 @@ export class ChartsComponent implements OnInit {
           self.barChart.series[0].setData([addDic.length + deleteDic.length]);
           self.barChart.series[1].setData([addDic.length]);
           self.barChart.series[2].setData([deleteDic.length], true);
+          let log = {};
+          log['switch'] = {};
+          log['switch']['nickname'] = resp.hits.hits[0]._source.swname;
 
+          log['logs'] = resp.hits.hits;
+          self.ESresult.unshift(log);
 
       }, function (err) {
           console.log(err.message);
@@ -425,23 +437,56 @@ export class ChartsComponent implements OnInit {
             const x = parseInt(resp.hits.hits[0]._source['timestamp']);
             const z = resp.hits.hits[0]._source['timestamp'];
             const y = resp.hits.hits[0]._source['cnt-total'];
-
-
-            console.log(x);
-            console.log(y);
-            const points = self.chart.series[0].data;
-            // console.log(points[points.length - 1]);
-            const lastPoint = points[points.length - 1];
-            if (points.length === 0 || lastPoint.options.x < x) {
-                self.chart.series[0].addPoint([x, y], true, false);
-                console.log('add new point at', x);
-            }
+            self.updateData(self.chart, 0, x, y);
 
         }, function (err) {
             console.log(err.message);
         });
 
 
+  }
+  updateData(currChart, ind, x , y) {
+        console.log('add point', x, y);
+      const points = currChart.series[ind].data;
+      if (points.length === 0) {
+          currChart.series[ind].addPoint([x, y], true, false);
+      } else if (points.length === 1) {
+
+          const t2x = points[points.length - 1].options.x;
+
+          if (x !== t2x) {
+              console.log('extend last point at', x, y);
+              currChart.series[ind].addPoint([x, y], true, false);
+          }
+      } else {
+          // console.log(points)
+          const t1x = points[points.length - 2].options.x;
+          const t1y = points[points.length - 2].options.y;
+          const t2x = points[points.length - 1].options.x;
+          const t2y = points[points.length - 1].options.y;
+          if (y !== t2y ) {
+              console.log('add point for changeing at', x, y);
+              const indicator = this.EventColors[y > t2y ? 0 : 1];
+              const marker = {
+                  fillColor: indicator
+              };
+              currChart.series[ind].addPoint({
+                  x: x,
+                  y: y,
+                  marker: marker
+              }, true, false);
+          } else if (t1y !== t2y) {
+              console.log('add point for bend at', x, y);
+              currChart.series[ind].addPoint([x, y], true, false);
+          } else if (x !== t2x) {
+              console.log('extend point at', x, y);
+              // points[points.length - 1].x = x;
+              currChart.series[ind].data[points.length - 1].update({
+                  x: x,
+                  y: y
+              });
+          }
+      }
   }
   initBarChart() {
       const options: Highcharts.Options = {

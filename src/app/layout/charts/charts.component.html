@@ -27,6 +27,66 @@
         </div>
 
     </div>
+    <div class="row" *ngFor="let switchLog of ESresult;  let i = index" [attr.data-index]="i">
+        <div class="col col-sm-12">
+            <div class="card mb-3" >
+                <div class="card-header">{{switchLog.switch.nickname}} </div>
+                <div class="card-body table-responsive">
+
+                    <table class="table table-hover table-striped" >
+                        <thead>
+                        <tr>
+                            <th>ip prefix</th>
+                            <th>owner</th>
+                            <th>event</th>
+                            <th>vrfname</th>
+                            <th>nh_count</th>
+                            <th>time</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        <tr *ngFor="let data of switchLog.logs;let ind = index" [attr.data-index]="ind">
+                            <td>
+                                {{data._source.prefix}}
+                            </td>
+                            <td>
+                                {{data._source.owner}}
+                            </td>
+                            <td>
+                                {{data._source.event}}
+                            </td>
+                            <td>
+                                {{data._source.vrfname}}
+                            </td>
+                            <td>
+                                <ng-template #tipContent>
+
+                                    nh_address : {{data._source.nh_address}}<br />
+                                    nh_count : {{data._source.nh_count}}<br />
+                                    nh_index : {{data._source.nh_index}}<br />
+                                    nh_metric : {{data._source.nh_metric}}<br />
+                                    nh_outintf : {{data._source.nh_outintf}}<br />
+                                    nh_preference : {{data._source.nh_preference}}<br />
+
+                                </ng-template>
+                                <div placement="left" [ngbTooltip]="tipContent">
+                                    {{data._source.nh_count}}
+                                </div>
+
+                            </td>
+                            <td>
+                                {{data._source.time}}
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
 
     <div class="row">
         <div class="col col-sm-6">
