@@ -1,0 +1,21 @@
+
+---
+Name: "routetracker"
+AppId: "routetracker"
+Vendor: "Cisco"
+Version: "0.1"
+Tag: "routetracker:v3"
+Description: "routetracker"
+
+Category: Application
+
+Resource:
+  CPU: 256M
+  MEMORY: 512M
+
+
+GUI:
+  Integrated:
+    Port: 80
+    Protocol: http
+  

@@ -1,19 +1,20 @@
-import { Component, OnInit ,Output, EventEmitter, HostListener} from '@angular/core';
-import { Router, NavigationEnd } from '@angular/router';
-import { LocalDataSource, ServerDataSource } from 'ng2-smart-table';
-import { HttpClient } from '@angular/common/http';
-import { switchTableService} from './../../Service/switchTable.service'
-import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import {Component, OnInit, Output, EventEmitter, HostListener} from '@angular/core';
+import {Router, NavigationEnd} from '@angular/router';
+import {LocalDataSource, ServerDataSource} from 'ng2-smart-table';
+import {HttpClient} from '@angular/common/http';
+import {switchTableService} from './../../Service/switchTable.service';
+import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
+
 @Component({
     selector: 'app-sideTable',
     templateUrl: './sideTable.component.html',
     styleUrls: ['./sideTable.component.scss']
 })
 export class sideTableComponent {
-  public isCollapsed = false;
+    public isCollapsed = false;
     settings = {
-      selectMode: 'multi',
-      actions: false,
+        selectMode: 'multi',
+        actions: false,
         columns: {
 
             ip: {
@@ -21,20 +22,34 @@ export class sideTableComponent {
             }
         }
     };
+
+
+    // source: ServerDataSource;
+    source: LocalDataSource;
     data = [
+        {
+            id: '1',
+            ip: '172.25.140.229',
+            name: 'admin',
+            pwd: 'Ciscolab123',
+            nickname: 'n9k-14'
+        }, {
+            id: '1',
+            ip: '172.25.140.150',
+            name: 'admin',
+            pwd: 'insami',
+            nickname: 'nsdf'
+        }
     ];
 
-    source: ServerDataSource; // add a property to the component
-// @Output() toggle: EventEmitter<null> = new EventEmitter();
-
-
-
-constructor(http: HttpClient,
-            private st : switchTableService) {
-  this.source = new ServerDataSource(http, { endPoint: 'http://localhost:3000/switches' });
-}
+    constructor(http: HttpClient,
+                private st: switchTableService) {
+        // this.source = new ServerDataSource(http, {endPoint: 'http://localhost:3000/switches'});
+        this.source = new LocalDataSource(this.data);
+    }
 
     public innerHeight: any;
+
     ngOnInit() {
         this.innerHeight = window.innerHeight;
     }
@@ -42,17 +57,17 @@ constructor(http: HttpClient,
     @HostListener('window:resize', ['$event'])
     onResize(event) {
         this.innerHeight = window.innerHeight;
-        console.log(this.innerHeight)
+        console.log(this.innerHeight);
     }
 
 
 // @HostListener('onUserRowSelect')
-onUserRowSelect(event){
-  console.log(event.selected)
-  this.data = event.selected
-  this.st.setSwitch(event.selected)
-  // this.toggle.emit(event.selected)
-}
+    onUserRowSelect(event) {
+        console.log(event.selected);
+        this.data = event.selected;
+        this.st.setSwitch(event.selected);
+
+    }
 
 
 }
