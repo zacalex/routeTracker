@@ -1,4 +1,5 @@
-#DCNM AWF UI Development Guild for AngularJS
+DCNM AWF UI Development Guild for AngularJS
+============================================
 This file is to instruct how to use DCNM AWF and Services in DCNM (ES, UTR, NXAPI)
 ****
 |Author|Cal Huang|
