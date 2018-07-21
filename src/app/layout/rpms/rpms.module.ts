@@ -15,7 +15,7 @@ import {RouteTrackerResultComponent} from './routeTracker/routeTrackerResult/rou
 import {ChartsComponent} from './routeTracker/charts/charts.component';
 import {ElasticsearchService} from './../Service/elasticsearch.service';
 import {nxapiService} from './../Service/nxapi.service';
-import {localBackendService} from './../Service/localBackend.service';
+
 
 // import {  QueryBuilder} from 'bodybuilder'
 
@@ -36,7 +36,7 @@ import {localBackendService} from './../Service/localBackend.service';
         RouteTrackerComponent,
         RouteTrackerResultComponent,
         ChartsComponent],
-    providers: [ElasticsearchService, nxapiService, localBackendService]
+    providers: [ElasticsearchService, nxapiService]
 })
 export class RpmsModule {
 }

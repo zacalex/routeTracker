@@ -34,11 +34,11 @@ export class sideTableComponent {
             pwd: 'Ciscolab123',
             nickname: 'n9k-14'
         }, {
-            id: '1',
-            ip: '172.25.140.150',
+            id: '2',
+            ip: '172.27.251.113',
             name: 'admin',
-            pwd: 'insami',
-            nickname: 'nsdf'
+            pwd: 'Lablab123',
+            nickname: 'n9k-spine-1'
         }
     ];
 

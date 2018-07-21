@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { routerTransition } from '../../router.animations';
 import { chart } from 'highcharts';
 import { ElasticsearchService } from './../Service/elasticsearch.service';
-import {localBackendService} from './../Service/localBackend.service';
+
 
 
 @Component({
@@ -13,7 +13,7 @@ import {localBackendService} from './../Service/localBackend.service';
 })
 export class RpmsComponent implements OnInit {
 
-    constructor(private lb: localBackendService,
+    constructor(
         private es: ElasticsearchService) {
 
     }

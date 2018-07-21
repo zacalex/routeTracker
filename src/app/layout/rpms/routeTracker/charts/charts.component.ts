@@ -21,7 +21,7 @@ export class ChartsComponent implements OnInit {
     public chartHeight = 35;
 
     @ViewChild('chartTarget') chartTarget: ElementRef;
-    @ViewChild('ipBarChart') ipBarChart: ElementRef;
+    // @ViewChild('ipBarChart') ipBarChart: ElementRef;
 
     @ViewChild('top1') top1: ElementRef;
     @ViewChild('top2') top2: ElementRef;
@@ -42,14 +42,12 @@ export class ChartsComponent implements OnInit {
 
     EventColors = ['#00FF00', '#FF0000'];
 
-    ownerChartFlag = true;
-    vrfChartFlag = true;
-    eventTableFlag = true;
 
     detailName = 'test';
     lineChartname = 'test';
     EventChartname = 'test';
-
+    autoFlag = true;
+    switchCounts = 0;
 
     tableTitle = 'latest on ';
     public radioGroupForm: FormGroup;
@@ -111,6 +109,198 @@ export class ChartsComponent implements OnInit {
         }
 
     };
+    ES_QUERY_AGGS_OWNER = {
+        index: 'routetracker*',
+        body: {
+            'query': {
+                'bool': {
+                    'must': [
+                        {
+                            'exists': {
+                                'field': 'event'
+                            }
+                        }
+                    ],
+                    'filter': {
+                        'range': {
+                            'timestamp': {
+                                'gte': 'now-5m',
+                                'lte': 'now'
+                            }
+                        }
+                    }
+                }
+
+            }, 'size': 0,
+            'aggs': {
+                'agg1': {
+                    'terms': {
+                        'field': 'switchname.keyword'
+                    },
+                    'aggs': {
+                        'agg2': {
+                            'terms': {
+                                'field': 'owner.keyword'
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    };
+    ES_QUERY_AGGS_VRF = {
+        index: 'routetracker*',
+        body: {
+            'query': {
+                'bool': {
+                    'must': [
+                        {
+                            'exists': {
+                                'field': 'event'
+                            }
+                        }
+                    ],
+                    'filter': [{
+                        'range': {
+                            'timestamp': {
+                                'gte': 'now-5m',
+                                'lte': 'now'
+                            }
+                        }
+                    }, {
+                        'term': {
+                            'switchname': ''
+                        }
+                    }, {
+                        'term': {
+                            'owner': ''
+                        }
+                    }
+                    ]
+                }
+
+            }, 'size': 0,
+            'aggs': {
+                'agg1': {
+                    'terms': {
+                        'field': 'vrfname.keyword'
+                    }
+                }
+            }
+        }
+
+    };
+    ES_QUERY_AGGS_EVENT = {
+        index: 'routetracker*',
+        body: {
+            'query': {
+                'bool': {
+                    'must': [
+                        {
+                            'exists': {
+                                'field': 'event'
+                            }
+                        }
+                    ],
+                    'filter': [{
+                        'range': {
+                            'timestamp': {
+                                'gte': 'now-1y',
+                                'lte': 'now'
+                            }
+                        }
+                    }, {
+                        'term': {
+                            'switchname': ''
+                        }
+                    }, {
+                        'term': {
+                            'owner': ''
+                        }
+                    }, {
+                        'term': {
+                            'vrfname': ''
+                        }
+                    }
+                    ]
+                }
+
+            }, 'size': 0,
+            'aggs': {
+                'agg1': {
+                    'terms': {
+                        'field': 'event.keyword'
+                    },
+                    'aggs': {
+                        'cnt_over_time': {
+                            'date_histogram': {
+                                'field': 'timestamp',
+                                'interval': '5m',
+                                'keyed': false
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    };
+    ES_QUERY_TABLE = {
+        index: 'routetracker_*',
+        body: {
+            'query': {
+                'bool': {
+                    'must': [
+                        {
+                            'exists': {
+                                'field': 'event'
+                            }
+                        }
+                    ]
+                    ,
+                    'filter': [
+                        {
+                            'range': {
+                                'timestamp': {
+                                    'gte': '',
+                                    'lte': ''
+                                }
+                            }
+                        }
+                        , {
+                            'term': {
+                                'switchname': ''
+                            }
+                        },
+                        {
+                            'term': {
+                                'owner': ''
+                            }
+                        },
+                        {
+                            'term': {
+                                'vrfname': ''
+                            }
+                        }
+
+                    ]
+                }
+            }
+            , 'size': 50,
+
+            'sort': [
+                {
+                    'timestamp': {
+                        'order': 'desc'
+                    }
+                }
+            ]
+        }
+
+    };
+    switchname = '';
+    owner = '';
 
 
     constructor(private es: ElasticsearchService,
@@ -138,13 +328,13 @@ export class ChartsComponent implements OnInit {
     ngAfterViewInit() {
 
 
-        this.initBarChart();
+        // this.initBarChart();
         this.updataPieChart();
 
     }
 
 
-    //linechart
+    // linechart
     initLineChart(data, switchname, owner, vrfname) {
         const self = this;
         const options: Highcharts.Options = {
@@ -154,13 +344,14 @@ export class ChartsComponent implements OnInit {
                         let text,
                             label;
                         if (event.xAxis) {
-                            text = 'min: ' + Highcharts.numberFormat(event.xAxis[0].min, 2) + ', max: ' + Highcharts.numberFormat(event.xAxis[0].max, 2);
+                            text = 'min: ' + Highcharts.numberFormat(event.xAxis[0].min, 2) + ', max: '
+                                + Highcharts.numberFormat(event.xAxis[0].max, 2);
                             console.log('selection');
-                            const gte = event.xAxis[0].min;
-                            const lte = event.xAxis[0].max;
+                            const gte = Math.floor( event.xAxis[0].min );
+                            const lte = Math.ceil( event.xAxis[0].max );
                             console.log(gte);
                             console.log(lte);
-                            self.updateEventChart(gte, lte, switchname, owner, vrfname);
+                            self.updateTable(gte, lte, switchname, owner, vrfname);
 
                         } else {
                             text = 'Selection reset';
@@ -180,6 +371,7 @@ export class ChartsComponent implements OnInit {
                         setTimeout(function () {
                             label.fadeOut();
                         }, 1000);
+                        self.autoFlag = false;
                     }
                 },
                 zoomType: 'x'
@@ -200,7 +392,7 @@ export class ChartsComponent implements OnInit {
                 }
             },
             legend: {
-                enabled: false
+                enabled: true
             },
             exporting: {
                 enabled: false
@@ -210,7 +402,7 @@ export class ChartsComponent implements OnInit {
                     // console.log(this.x)
                     return '<b>' + this.series.name + '</b><br/>' +
                         Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
-                        Highcharts.numberFormat(this.y, 2);
+                        this.y;
                 }
             },
             plotOptions: {
@@ -225,19 +417,20 @@ export class ChartsComponent implements OnInit {
                                 const id = event.point.index;
                                 const preTime = self.chart.series[0].data[id - 1].options.x;
                                 console.log(preTime);
-                                self.updateEventChart(preTime, currentTime, switchname, owner, vrfname);
+                                self.updateTable(preTime, currentTime, switchname, owner, vrfname);
+                                self.autoFlag = false;
                             }
                         }
                     }
                 }
             },
             series: [{
-                name: 'changing route',
+                name: data[0].key,
                 data: (function () {
                     const lineChartData = [];
-                    data.forEach(function (ele) {
-                        const x = parseInt(ele._source['timestamp']);
-                        const y = ele._source['cnt_total'];
+                    data[0].cnt_over_time.buckets.forEach(function (ele) {
+                        const x = ele.key;
+                        const y = ele.doc_count;
                         lineChartData.push({
                             x: x,
                             y: y
@@ -246,6 +439,20 @@ export class ChartsComponent implements OnInit {
                     return lineChartData;
                 }())
 
+            }, {
+                name: data[1].key,
+                data: (function () {
+                    const lineChartData = [];
+                    data[1].cnt_over_time.buckets.forEach(function (ele) {
+                        const x = ele.key;
+                        const y = ele.doc_count;
+                        lineChartData.push({
+                            x: x,
+                            y: y
+                        });
+                    });
+                    return lineChartData;
+                }())
             }]
         };
 
@@ -253,234 +460,55 @@ export class ChartsComponent implements OnInit {
     }
 
 
-    // barchart
-    initBarChart() {
+    updateTable(pre, curr, switchname, owner, vrfname) {
         const self = this;
-        const options: Highcharts.Options = {
-            chart: {
-                type: 'column'
-            },
-            title: {
-                text: null
-            },
-            xAxis: {
-                categories: []
-            },
-            yAxis: {
-                title: {
-                    text: ' '
-                }
-            },
-            tooltip: {
-                headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
-                pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                '<td style="padding:0"><b>{point.y}</b></td></tr>',
-                footerFormat: '</table>',
-                shared: true,
-                useHTML: true
-            },
-            plotOptions: {
-                column: {
-                    pointPadding: 0.2,
-                    borderWidth: 0
-                },
-                series: {
-                    cursor: 'pointer',
-                    point: {
-                        events: {
-                            click: function () {
-                                alert('Category: ' + this.category + ', value: ' + this.y);
-                            }
-                        }
-                    }
-                }
-            },
-            series: [{
-                name: 'total',
-                data: []
-            }, {
-                name: 'add',
-                data: []
-            }, {
-                name: 'delete',
-                data: []
-            }]
-        };
-        options.series[0].data = this.ESresult['total'];
-        console.log(options);
-        this.barChart = chart(this.ipBarChart.nativeElement, options);
-    }
-
-    updateEventChart(pre, curr, switchname, owner, vrfname) {
-        const self = this;
-        this.initBarChart();
-        this.ESresult = {};
-        this.ESresult['add'] = {};
-        this.ESresult['delete'] = {};
-        this.ESresult['time'] = [];
-        this.ESresult['total'] = [];
-        this.ESresult['addLi'] = [];
-        this.ESresult['deleteLi'] = [];
-        this.vrfChartFlag = false;
-        this.eventTableFlag = false;
-        this.lineChartname = switchname + '/' + owner + '/' + vrfname;
-        this.EventChartname = switchname + '/' + owner + '/' + vrfname;
-
-
+        self.tableTitle = switchname + '/' + owner + '/' + vrfname + ' from ' + pre + ' to ' + curr;
+        // this.initBarChart();
         console.log(switchname, owner, vrfname);
-        // console.log('here to use es get count');
-        const diff = (curr - pre) / 12;
-        for (let st = pre; st < curr; st += diff) {
-            const addQuery = {
-                index: 'routetracker_event_stats_*',
-                body: {
-                    'query': {
-                        'bool': {
-                            'must': [
-                                {
-                                    'exists': {
-                                        'field': 'event'
-                                    }
-                                }
-                            ]
-                            ,
-                            'filter': [
-                                {
-                                    'range': {
-                                        'timestamp': {
-                                            'gte': st.toString(),
-                                            'lte': (st + diff).toString()
-                                        }
-                                    }
-                                }
-                                , {
-                                    'term': {
-                                        'switchname': switchname
-                                    }
-                                },
-                                {
-                                    'term': {
-                                        'owner': owner
-                                    }
-                                },
-                                {
-                                    'term': {
-                                        'vrfname': vrfname
-                                    }
-                                },
-                                {
-                                    'term': {
-                                        'event': 'add'
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                    , 'size': 50
-                    // ,
-                    // 'sort': [
-                    //     {
-                    //         'timestamp': {
-                    //             'order': 'desc'
-                    //         }
-                    //     }
-                    // ]
-                }
-
-            };
-            const deleteQuery = {
-                index: 'routetracker_event_stats_*',
-                body: {
-                    'query': {
-                        'bool': {
-                            'must': [
-                                {
-                                    'exists': {
-                                        'field': 'event'
-                                    }
-                                }
-                            ]
-                            ,
-                            'filter': [
-                                {
-                                    'range': {
-                                        'timestamp': {
-                                            'gte': st.toString(),
-                                            'lte': (st + diff).toString()
-                                        }
-                                    }
-                                }
-                                , {
-                                    'term': {
-                                        'switchname': switchname
-                                    }
-                                },
-                                {
-                                    'term': {
-                                        'owner': owner
-                                    }
-                                },
-                                {
-                                    'term': {
-                                        'vrfname': vrfname
-                                    }
-                                },
-                                {
-                                    'term': {
-                                        'event': 'delete'
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                    , 'size': 50,
-                    'sort': [
-                        {
-                            'timestamp': {
-                                'order': 'desc'
-                            }
-                        }
-                    ]
-                }
-
-            };
-
-            self.ESLogresult['switch']['nickname'] = switchname;
-            self.ESLogresult['logs'] = [];
-            const time = st.toString();
-            // console.log(time);
-            this.es.search(addQuery).then(function (resp) {
 
 
-                self.barChart.series[1].addPoint(resp.hits.total, true);
-                console.log(resp.hits.hits);
-                for (const ele of resp.hits.hits) {
-                    self.ESLogresult['logs'].push(ele);
-                }
+        self.ES_QUERY_TABLE.body.query.bool.filter[0].range.timestamp.gte = pre;
+        self.ES_QUERY_TABLE.body.query.bool.filter[0].range.timestamp.lte = curr;
+        self.ES_QUERY_TABLE.body.query.bool.filter[1].term.switchname = switchname;
+        self.ES_QUERY_TABLE.body.query.bool.filter[2].term.owner = owner;
+        self.ES_QUERY_TABLE.body.query.bool.filter[3].term.vrfname = vrfname;
+
+        self.ESLogresult['switch']['nickname'] = switchname;
+        self.ESLogresult['logs'] = [];
+
+        // console.log(time);
+        this.es.search(this.ES_QUERY_TABLE).then(function (resp) {
 
 
-            }, function (err) {
-                console.log(err.message);
-            });
-            this.es.search(deleteQuery).then(function (resp) {
-
-                console.log(resp.hits.hits);
-                for (const ele of resp.hits.hits) {
-                    self.ESLogresult['logs'].push(ele);
-                }
-                self.barChart.series[2].addPoint(resp.hits.total, true);
+            console.log(resp.hits.hits);
+            for (const ele of resp.hits.hits) {
+                self.ESLogresult['logs'].push(ele);
+            }
 
 
-            }, function (err) {
-                console.log(err.message);
-            });
-
-        }
-
+        }, function (err) {
+            console.log(err.message);
+        });
 
         console.log('printlog', self.ESLogresult);
 
 
+    }
+
+    searchForDetailPieChart(input) {
+        const self = this;
+        const paras = input.split('/');
+        self.switchname = paras[0];
+        self.owner = paras[1];
+        self.ES_QUERY_AGGS_VRF.body.query.bool.filter[1].term.switchname = paras[0];
+        self.ES_QUERY_AGGS_VRF.body.query.bool.filter[2].term.owner = paras[1];
+        self.es.search(self.ES_QUERY_AGGS_VRF).then(function (resp) {
+            console.log(resp);
+            self.setDetailPieChart(resp.aggregations.agg1.buckets);
+
+        }, function (err) {
+            console.log(err.message);
+        });
     }
 
     // piechart
@@ -518,80 +546,19 @@ export class ChartsComponent implements OnInit {
                 point: {
                     events: {
                         click: function (event) {
-                            console.log(this);
+                            console.log(this.options.name);
                             // const name = this.options.name;
-                            const paras = this.options.name.split('/');
-                            const ES_QUERY_VRF = {
-                                index: 'routetracker_event_stats_*',
-                                body: {
-                                    'query': {
-                                        'bool': {
-                                            'must':
-                                                [{
-                                                    'exists': {
-                                                        'field': 'cnt_total'
-                                                    }
-
-                                                }, {
-                                                    'exists': {
-                                                        'field': 'vrf_source'
-                                                    }
-
-                                                }
-                                                ],
-                                            'must_not': [
-                                                {
-                                                    'exists': {
-                                                        'field': 'event'
-                                                    }
-                                                }
-                                            ],
-                                            'filter': [{
-                                                'range': {
-                                                    'timestamp': {
-                                                        'gte': 'now-1d',
-                                                        'lte': 'now'
-                                                    }
-                                                }
-                                            }, {
-                                                'term': {
-                                                    'switchname': paras[0]
-                                                }
-                                            },
-                                                {
-                                                    'term': {
-                                                        'owner': paras[1]
-                                                    }
-                                                }]
-                                        }
-                                    }
-                                    , 'size': 1000,
-                                    'sort': [
-                                        {
-                                            'timestamp': {
-                                                'order': 'desc'
-                                            }
-                                        }
-                                    ]
-                                }
-
-                            };
-                            self.es.search(ES_QUERY_VRF).then(function (resp) {
-                                // console.log(resp.hits.hits);
-                                self.setDetailPieChart(resp.hits.hits);
-
-                            }, function (err) {
-                                console.log(err.message);
-                            });
-
-                            // this.pieChart6 = chart(this.detailPie.nativeElement, options);
+                            self.searchForDetailPieChart(this.options.name);
+                            self.autoFlag = false;
                         }
                     }
                 },
                 data: []
             }]
         };
+        this.switchCounts = 0;
         let pieChartDataList = [];
+        console.log(data);
         for (const key in data) {
             const obj = {};
             obj['title'] = key;
@@ -609,45 +576,68 @@ export class ChartsComponent implements OnInit {
             pieChartDataList.push(obj);
         }
         pieChartDataList = this.sortByCnt(pieChartDataList);
+        console.log(pieChartDataList);
+        if (pieChartDataList[0]) {
+            this.switchCounts++;
+            PIECHART_OPTIONS.title.text = pieChartDataList[0].title;
+            PIECHART_OPTIONS.subtitle.text = 'event: ' + pieChartDataList[0].total;
+            PIECHART_OPTIONS.series[0].data = pieChartDataList[0].data;
+            PIECHART_OPTIONS.series[0].name = pieChartDataList[0].title;
+            this.pieChart1 = chart(this.top1.nativeElement, PIECHART_OPTIONS);
+            if (this.autoFlag) {
 
-        PIECHART_OPTIONS.title.text = pieChartDataList[0].title;
-        PIECHART_OPTIONS.subtitle.text = 'total; ' + pieChartDataList[0].total;
-        PIECHART_OPTIONS.series[0].data = pieChartDataList[0].data;
-        PIECHART_OPTIONS.series[0].name = pieChartDataList[0].title;
-        this.pieChart1 = chart(this.top1.nativeElement, PIECHART_OPTIONS);
+                const input = pieChartDataList[0].data[1];
+                this.searchForDetailPieChart(input.name);
 
-        PIECHART_OPTIONS.title.text = pieChartDataList[1].title;
-        PIECHART_OPTIONS.subtitle.text = 'total; ' + pieChartDataList[1].total;
-        PIECHART_OPTIONS.series[0].data = pieChartDataList[1].data;
-        PIECHART_OPTIONS.series[0].name = pieChartDataList[1].title;
-        this.pieChart2 = chart(this.top2.nativeElement, PIECHART_OPTIONS);
 
-        PIECHART_OPTIONS.title.text = pieChartDataList[2].title;
-        PIECHART_OPTIONS.subtitle.text = 'total; ' + pieChartDataList[2].total;
-        PIECHART_OPTIONS.series[0].data = pieChartDataList[2].data;
-        PIECHART_OPTIONS.series[0].name = pieChartDataList[2].title;
-        this.pieChart3 = chart(this.top3.nativeElement, PIECHART_OPTIONS);
+            }
+        }
 
-        PIECHART_OPTIONS.title.text = pieChartDataList[3].title;
-        PIECHART_OPTIONS.subtitle.text = 'total; ' + pieChartDataList[3].total;
-        PIECHART_OPTIONS.series[0].data = pieChartDataList[3].data;
-        PIECHART_OPTIONS.series[0].name = pieChartDataList[3].title;
-        this.pieChart4 = chart(this.top4.nativeElement, PIECHART_OPTIONS);
+        if (pieChartDataList[1]) {
+            this.switchCounts++;
+            PIECHART_OPTIONS.title.text = pieChartDataList[1].title;
+            PIECHART_OPTIONS.subtitle.text = 'total; ' + pieChartDataList[1].total;
+            PIECHART_OPTIONS.series[0].data = pieChartDataList[1].data;
+            PIECHART_OPTIONS.series[0].name = pieChartDataList[1].title;
+            this.pieChart2 = chart(this.top2.nativeElement, PIECHART_OPTIONS);
+        }
 
-        PIECHART_OPTIONS.title.text = pieChartDataList[4].title;
-        PIECHART_OPTIONS.subtitle.text = 'total; ' + pieChartDataList[4].total;
-        PIECHART_OPTIONS.series[0].data = pieChartDataList[4].data;
-        PIECHART_OPTIONS.series[0].name = pieChartDataList[4].title;
-        this.pieChart5 = chart(this.top5.nativeElement, PIECHART_OPTIONS);
+        if (pieChartDataList[2]) {
+            this.switchCounts++;
+            PIECHART_OPTIONS.title.text = pieChartDataList[2].title;
+            PIECHART_OPTIONS.subtitle.text = 'total; ' + pieChartDataList[2].total;
+            PIECHART_OPTIONS.series[0].data = pieChartDataList[2].data;
+            PIECHART_OPTIONS.series[0].name = pieChartDataList[2].title;
+            this.pieChart3 = chart(this.top3.nativeElement, PIECHART_OPTIONS);
+        }
+
+        if (pieChartDataList[3]) {
+            this.switchCounts++;
+            PIECHART_OPTIONS.title.text = pieChartDataList[3].title;
+            PIECHART_OPTIONS.subtitle.text = 'total; ' + pieChartDataList[3].total;
+            PIECHART_OPTIONS.series[0].data = pieChartDataList[3].data;
+            PIECHART_OPTIONS.series[0].name = pieChartDataList[3].title;
+            this.pieChart4 = chart(this.top4.nativeElement, PIECHART_OPTIONS);
+        }
+        if (pieChartDataList[4]) {
+            this.switchCounts++;
+            PIECHART_OPTIONS.title.text = pieChartDataList[4].title;
+            PIECHART_OPTIONS.subtitle.text = 'total; ' + pieChartDataList[4].total;
+            PIECHART_OPTIONS.series[0].data = pieChartDataList[4].data;
+            PIECHART_OPTIONS.series[0].name = pieChartDataList[4].title;
+            this.pieChart5 = chart(this.top5.nativeElement, PIECHART_OPTIONS);
+        }
 
     }
 
     updataPieChart() {
         const self = this;
-        this.es.search(this.ES_QUERY_OWNER).then(function (resp) {
-            // console.log(resp.hits.hits);
+
+        this.es.search(this.ES_QUERY_AGGS_OWNER).then(function (resp) {
+
             if (resp) {
-                self.processVrfData(resp.hits.hits);
+                console.log(resp);
+                self.processVrfAgg(resp.aggregations.agg1.buckets);
             } else {
                 console.log('empty response');
             }
@@ -658,31 +648,47 @@ export class ChartsComponent implements OnInit {
         });
     }
 
-    processVrfData(data) {
-        // const self = this;
-        const pieChartData = {};
+    processVrfAgg(data) {
         console.log(data);
+        const pieChartData = {};
+
         data.forEach(function (ele) {
-            const para = ele._source;
-            if (para['switchname'] in pieChartData) {
-                if (para['owner'] in pieChartData[para['switchname']]) {
-                    pieChartData[para['switchname']][para['owner']] += para['cnt_total'];
-                } else {
-                    pieChartData[para['switchname']][para['owner']] = para['cnt_total'];
-                }
-            } else {
-                pieChartData[para['switchname']] = {};
-                pieChartData[para['switchname']][para['owner']] = para['cnt_total'];
-            }
-            if ('total' in pieChartData[para['switchname']]) {
-                pieChartData[para['switchname']]['total'] += para['cnt_total'];
-            } else {
-                pieChartData[para['switchname']]['total'] = para['cnt_total'];
-            }
+            const title = ele.key;
+            const agg2 = ele.agg2.buckets;
+            pieChartData[title] = {};
+            let total = 0;
+            agg2.forEach(function (cnts) {
+                pieChartData[title][cnts.key] = cnts.doc_count;
+                total += cnts.doc_count;
+            });
+            pieChartData[title]['total'] = total;
         });
 
         console.log(pieChartData);
         this.initPieChart(pieChartData);
+    }
+
+
+    searchForLineChart(input) {
+        const self = this;
+        self.lineChartname = input;
+        self.tableTitle = 'details for ' + input;
+        // const name = this.options.name;
+        const paras = input.split('/');
+
+        self.ES_QUERY_AGGS_EVENT.body.query.bool.filter[1].term.switchname = paras[0];
+        self.ES_QUERY_AGGS_EVENT.body.query.bool.filter[2].term.owner = paras[1];
+        self.ES_QUERY_AGGS_EVENT.body.query.bool.filter[3].term.vrfname = paras[2];
+        self.es.search(self.ES_QUERY_AGGS_EVENT).then(function (resp) {
+            console.log("init line chart");
+            console.log(resp.aggregations);
+            self.initLineChart(resp.aggregations.agg1.buckets, paras[0], paras[1], paras[2]);
+
+
+        }, function (err) {
+            console.log(err.message);
+        });
+        self.updateTable('now-1y', 'now', paras[0], paras[1], paras[2]);
     }
 
     // detailPieChart
@@ -690,17 +696,13 @@ export class ChartsComponent implements OnInit {
         const self = this;
         console.log(data);
         const vrfDic = {};
-        let switchname = '';
-        let owner = '';
+        const switchname = this.switchname;
+        const owner = this.owner;
+        let vrf = '';
         data.forEach(function (ele) {
-            const para = ele._source;
-            switchname = para.switchname;
-            owner = para.owner;
-            if (para['vrfname'] in vrfDic) {
-                vrfDic[para['vrfname']] += para['cnt_total'];
-            } else {
-                vrfDic[para['vrfname']] = para['cnt_total'];
-            }
+            const title = ele.key;
+            vrfDic[title] = ele.doc_count;
+            vrf = title;
 
         });
         const pieChartDataList = [];
@@ -731,7 +733,7 @@ export class ChartsComponent implements OnInit {
                     dataLabels: {
                         enabled: false
                     },
-                    // showInLegend: true
+                    showInLegend: true
                 }
             },
             series: [{
@@ -742,82 +744,9 @@ export class ChartsComponent implements OnInit {
                         click: function (event) {
                             console.log(this);
                             self.tableTitle = 'details for ' + this.options.name;
-                            // const name = this.options.name;
-                            const paras = this.options.name.split('/');
-                            const ES_QUERY_VRF = {
-                                index: 'routetracker_event_stats_*',
-                                body: {
-                                    'query': {
-                                        'bool': {
-                                            'must':
-                                                [{
-                                                    'exists': {
-                                                        'field': 'cnt_total'
-                                                    }
+                            self.searchForLineChart(this.options.name);
+                            self.autoFlag = false;
 
-                                                }, {
-                                                    'exists': {
-                                                        'field': 'vrf_source'
-                                                    }
-
-                                                }
-                                                ],
-                                            'must_not': [
-                                                {
-                                                    'exists': {
-                                                        'field': 'event'
-                                                    }
-                                                }
-                                            ],
-                                            'filter': [{
-                                                'range': {
-                                                    'timestamp': {
-                                                        'gte': 'now-1d',
-                                                        'lte': 'now'
-                                                    }
-                                                }
-                                            }, {
-                                                'term': {
-                                                    'switchname': paras[0]
-                                                }
-                                            },
-                                                {
-                                                    'term': {
-                                                        'owner': paras[1]
-                                                    }
-                                                }, {
-                                                    'term': {
-                                                        'vrfname': paras[2]
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    }
-                                    , 'size': 1000,
-                                    'sort': [
-                                        {
-                                            'timestamp': {
-                                                'order': 'asc'
-                                            }
-                                        }
-                                    ]
-                                }
-
-                            };
-                            self.es.search(ES_QUERY_VRF).then(function (resp) {
-                                console.log(resp.hits.hits);
-                                self.initLineChart(resp.hits.hits, paras[0], paras[1], paras[2]);
-                                const date = new Date();
-                                const end = date.getTime();
-                                const start = end - 1000 * 60 * 60;
-                                self.updateEventChart(start, end, paras[0], paras[1], paras[2]);
-
-
-                            }, function (err) {
-                                console.log(err.message);
-                            });
-
-                            // this.pieChart6 = chart(this.detailPie.nativeElement, options);
                         }
                     }
                 },
@@ -828,9 +757,13 @@ export class ChartsComponent implements OnInit {
 
         PIECHART_OPTIONS.series[0].data = pieChartDataList;
         PIECHART_OPTIONS.series[0].name = owner + '/' + switchname;
-        this.detailName = owner + '/' + switchname;
-        this.ownerChartFlag = false;
+        this.detailName =  switchname + '/' + owner;
+
         this.pieChart6 = chart(this.detailPie.nativeElement, PIECHART_OPTIONS);
+        if (this.autoFlag) {
+            this.searchForLineChart(pieChartDataList[0].name);
+            this.updateTable('now-1y', 'now', switchname, owner, vrf);
+        }
     }
 
     sortByCnt(list) {
@@ -840,6 +773,7 @@ export class ChartsComponent implements OnInit {
     }
 
     onSearch(prefix) {
+        this.autoFlag = false
         const self = this;
         prefix = prefix.trim().replace('\/', '_').replace('\\', '_');
         console.log(prefix);
@@ -848,7 +782,7 @@ export class ChartsComponent implements OnInit {
         if (this.radioGroupForm.value.model === 'all_switches') {
             this.tableTitle = 'latest changes for ' + prefix + ' on all switches';
             query = {
-                index: 'routetracker_event_stats_*',
+                index: 'routetracker_*',
                 body: {
                     'query': {
                         'bool': {
@@ -859,15 +793,16 @@ export class ChartsComponent implements OnInit {
                             }
                         }
                     },
+                    'size': 0,
                     'aggs': {
 
-                        'group': {
+                        'agg1': {
                             'terms': {
                                 'field': 'switchname.keyword'
                             },
 
                             'aggs': {
-                                'group_docs': {
+                                'agg2': {
                                     'top_hits': {
                                         'size': 1,
                                         'sort': [
@@ -884,10 +819,21 @@ export class ChartsComponent implements OnInit {
                     }
                 }
             };
+            this.es.search(query).then(function (resp) {
+                console.log(resp.aggregations);
+                self.ESLogresult.logs = [];
+                // self.ESLogresult.logs = resp.aggregations.agg1.buckets;
+                resp.aggregations.agg1.buckets.forEach(function (aggEle) {
+                    self.ESLogresult.logs.push(aggEle.agg2.hits.hits[0]);
+                });
+                console.log("show res on all switch");
+            }, function (err) {
+                console.log(err.message);
+            });
         } else {
             this.tableTitle = 'latest changes for ' + prefix + ' on ' + this.ESLogresult.switch.nickname;
             query = {
-                index: 'routetracker_event_stats_*',
+                index: 'routetracker_*',
                 body: {
                     'query': {
                         'bool': {
@@ -923,15 +869,15 @@ export class ChartsComponent implements OnInit {
                 }
 
             };
-
+            this.es.search(query).then(function (resp) {
+                console.log(resp.hits.hits);
+                self.ESLogresult.logs = resp.hits.hits;
+            }, function (err) {
+                console.log(err.message);
+            });
 
         }
 
-        this.es.search(query).then(function (resp) {
-            console.log(resp.hits.hits);
-            self.ESLogresult.logs = resp.hits.hits;
-        }, function (err) {
-            console.log(err.message);
-        });
+
     }
 }

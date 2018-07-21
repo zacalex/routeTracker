@@ -40,7 +40,7 @@ export class ElasticsearchService {
         console.log('nomal connect ');
         this.client = new Client({
             // host: 'http://172.27.252.26:9200',
-            host: 'localhost:9200'
+            host: this.url
         });
     }
 

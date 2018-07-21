@@ -4,7 +4,7 @@ import {routerTransition} from '../../../router.animations';
 import {switchTableService} from './../../Service/switchTable.service';
 import {nxapiService} from './../../Service/nxapi.service';
 import {ElasticsearchService} from './../../Service/elasticsearch.service';
-import {localBackendService} from '../../Service/localBackend.service';
+
 import {chart} from 'highcharts';
 import * as Highcharts from 'highcharts';
 
@@ -27,7 +27,7 @@ export class RouteTrackerComponent implements OnInit {
     constructor(private st: switchTableService,
                 private nxapi: nxapiService,
                 private es: ElasticsearchService,
-                private lb: localBackendService) {
+                ) {
     }
 
     ngOnInit() {

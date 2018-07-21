@@ -2,7 +2,7 @@
     <div class="col col-sm-9">
         <div class="card mb-3">
             <div class="card-header">
-                top 5 changing in last hour
+                top {{switchCounts}} switches with most route changes in 5 min
             </div>
             <div class="card-body">
                 <div #top1 class="pieChart"></div>
@@ -13,7 +13,7 @@
             </div>
         </div>
     </div>
-    <div class="col col-sm-3" [hidden]="ownerChartFlag">
+    <div class="col col-sm-3" >
         <div class="card mb-3">
             <div class="card-header">
                 detail of {{detailName}}
@@ -26,8 +26,8 @@
     </div>
 
 </div>
-<div class="row" [hidden]="vrfChartFlag">
-    <div class="col col-sm-6">
+<div class="row" >
+    <div class="col col-sm-12">
         <div class="card mb-3">
             <div class="card-header">
                 {{lineChartname}} in last day
@@ -40,19 +40,19 @@
         </div>
     </div>
 
-    <div class="col col-sm-6">
-        <div class="card mb-3">
-            <div class="card-header">
-                {{EventChartname}} in selected time slot
-            </div>
-            <div class="card-body">
-                <div #ipBarChart style="min-width: 310px; height: 400px; margin: 0 auto"></div>
-            </div>
-        </div>
-    </div>
+    <!--<div class="col col-sm-6">-->
+        <!--<div class="card mb-3">-->
+            <!--<div class="card-header">-->
+                <!--{{EventChartname}} in selected time slot-->
+            <!--</div>-->
+            <!--<div class="card-body">-->
+                <!--<div #ipBarChart style="min-width: 310px; height: 400px; margin: 0 auto"></div>-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</div>-->
 
 </div>
-<div class="row" [hidden]="eventTableFlag">
+<div class="row" >
 
     <div class="col col-sm-12">
         <div class="card mb-3">

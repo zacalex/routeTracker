@@ -4,7 +4,7 @@ import { routerTransition } from '../../../../router.animations';
 import { switchTableService } from './../../../Service/switchTable.service';
 import { nxapiService } from './../../../Service/nxapi.service';
 import { ElasticsearchService } from './../../../Service/elasticsearch.service';
-import { localBackendService} from '../../../Service/localBackend.service';
+
 // import {bodybuilder} from 'bodybuilder'
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 @Component({
@@ -22,7 +22,7 @@ export class RouteTrackerResultComponent implements OnInit {
     public isCollapsed = false;
     constructor(private st: switchTableService,
         private es: ElasticsearchService,
-        private lb: localBackendService) {
+        ) {
     }
     data = {};
     latestAction = [];
