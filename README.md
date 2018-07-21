@@ -8,14 +8,14 @@ This file is to instruct how to use DCNM AWF and Services in DCNM (ES, UTR, NXAP
 ****
 table of Contents
 -------------------
-* [Structure](#Structure)
-* [Package](#Package)
-* [Build](#Build)
-* [Services](#Services)
-  * [ElasticSearch](#ElasticSearch)
-  * [UTR](#UTR)
-  * [NXAPI](#NXAPI)
-* [FQA](#FQA)
+* [Structure](#structure)
+* [Package](#package)
+* [Build](#build)
+* [Services](#services)
+  * [ElasticSearch](#elasticSearch)
+  * [UTR](#utr)
+  * [NXAPI](#nxapi)
+* [FQA](#fqa)
 
 ## Structure
 
