@@ -6,7 +6,8 @@ This file is to instruct how to use DCNM AWF and Services in DCNM (ES, UTR, NXAP
 |---|---
 |Email|calhuang@cisco.com
 ****
-##table of Contents
+table of Contents
+-------------------
 * [Structure](#Structure)
 * [Package](#Package)
 * [Build](#Build)
@@ -16,11 +17,16 @@ This file is to instruct how to use DCNM AWF and Services in DCNM (ES, UTR, NXAP
   * [NXAPI](#NXAPI)
 * [FQA](#FQA)
 
-##Structure
-##Package
-##Build
-##Services
+Structure
+------------
+Package
+-----------
+Build
+--------
+Services
+-----------
 ###ElasticSearch
 ###UTR
 ###NXAPI
-##FQA
+FQA
+-------
