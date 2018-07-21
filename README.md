@@ -17,13 +17,13 @@ table of Contents
   * [NXAPI](#NXAPI)
 * [FQA](#FQA)
 
-Structure
-------------
-Package
+## Structure
+
+## Package
 -----------
-Build
+## Build
 --------
-Services
+## Services
 -----------
 #### ElasticSearch
 ES
@@ -31,5 +31,5 @@ ES
 pipeline
 #### NXAPI
 NXAPI
-FQA
--------
+
+## FQA
