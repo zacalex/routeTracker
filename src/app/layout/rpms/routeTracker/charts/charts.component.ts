@@ -206,7 +206,7 @@ export class ChartsComponent implements OnInit {
                     'filter': [{
                         'range': {
                             'timestamp': {
-                                'gte': 'now-1y',
+                                'gte': 'now-3d',
                                 'lte': 'now'
                             }
                         }
