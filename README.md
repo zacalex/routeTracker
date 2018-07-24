@@ -48,7 +48,7 @@ DCNM will be scalable such that it can utilize Compute infra incrementally for n
 
 ## Structure
 <p align="center">
-  <img title="NXSDK + AFW Architecture " src="docs/Archtexture.png" width="450" height="250"/>
+  <img title="NXSDK + AFW Architecture " src="docs/Archtexture.png" width="450"/>
 </p>
 The application include a nxsdk agent running on switch, and a AFW app running in DCNM. Infras include elasticsearch, pipeline , nxapi , telemetry manager and restfulapi, are used.
 No code change needed for pipeline. Only needs to change is 2 config file.
@@ -57,10 +57,18 @@ The app part provide the simplified user interface, it send simplified instructi
 
 ## AWF Package
 
+If you already have an angularjs project, follow this step to make it a AWF application
+- build the project to production code, adjust the absolute path to relative paths
+- build app package with script
+- upload package to DCNM
+
 A DCNM application is comprised of the following
 - An application specification, <a href="packDir/spec.yml">spec.yml</a>
 - A Docker container image as a simple tar ball, <a href="packDir/image.tar">image.tar</a>
 - An icon that best depicts the application on the DCNM Catalog, for example <a href="packDir/icon.png">icon.png</a>
+
+A simple example script to generate package, <a href="dcnmPackage.sh">dcnmPackage.sh</a>
+Sample usage : ./dcnmPackage.sh routetracker:v1 routetracker
 
 ### app specification
 
@@ -107,12 +115,21 @@ not have to be unique across multiple applications.
 
 For more detail: <a href="docs/AFWUserGuide.docx">AFWUserGuide</a>
 
+### Docker container image
 
+Compile the AngularJS project to production code with command: ng build --prod
+Make sure you are using the relative paths:
+  <yourProject>-> dist -> index.html
+  at line 6
+  change <base href="./"> to <base href="./">
+Sample code <a href="dist/index.html">index.html</a>
 
+Host the compiled code using docker with nginx
+Check Dockerfile for more detail <a href="Dockerfile">Dockerfile</a>
 
+### icon
+File name needs to be icon.png
 
-
-## AngularJS
 
 ## Services
 
