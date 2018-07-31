@@ -12,9 +12,13 @@ Table of Contents
 * Cisco NX-SDK and DCNM AWF
 * [Structure](#structure)
 * [Package](#package)
+  * [App specification](#app specification)
+  * [Docker image](#docker image)
+  * [Icon](#icon)
 * [AngularJS](#angularjs)
   * [Dependency](#dependency)
   * [Build](#build)
+  * [Charts](#charts)
 * [Infra](#infra)
   * [ElasticSearch](#elasticsearch)
   * [UTR](#utr)
@@ -55,7 +59,7 @@ No code change needed for pipeline. Only needs to change is 2 config file.
 ES mapping and template is needed.
 The app part provide the simplified user interface, it send simplified instruction to NXSDK agent, and NXSDK agent send customized event data to telemetry, then telemetry stream data to pipeline and ES, then app do the visualization and more analysis.
 
-## AWF Package
+## Package
 
 If you already have an angularjs project, follow this step to make it a AWF application
 - build the project to production code, adjust the absolute path to relative paths
@@ -70,7 +74,7 @@ A DCNM application is comprised of the following
 A simple example script to generate package, <a href="dcnmPackage.sh">dcnmPackage.sh</a>
 Sample usage : ./dcnmPackage.sh routetracker:v1 routetracker
 
-### app specification
+### App specification
 
 - Name: APP Name
 A Name for this application. It is suggested to choose a unique name for the application
@@ -115,21 +119,41 @@ not have to be unique across multiple applications.
 
 For more detail: <a href="docs/AFWUserGuide.docx">AFWUserGuide</a>
 
-### Docker container image
+### Docker image
 
-Compile the AngularJS project to production code with command:
+Compile the AngularJS project to production code with command:＜/br＞
 ng build --prod
-Make sure you are using the relative paths:
-  yourProject -> dist -> index.html
-  at line 6
-  change <base href="./"> to <base href="./">
+Make sure you are using the relative paths:＜/br＞
+  yourProject -> dist -> index.html＜/br＞
+  at line 6＜/br＞
+  change "/" to "./"
 Sample code <a href="dist/index.html">index.html</a>
 
-Host the compiled code using docker with nginx
+Host the compiled code using docker with nginx＜/br＞
 Check Dockerfile for more detail <a href="Dockerfile">Dockerfile</a>
 
-### icon
+### Icon
 File name needs to be icon.png
+
+## AngularJS
+### Dependency
+Check <a href="package.json">package.json</a> for dependency.
+
+There are some that used a lot:
+- "@angular/http": "^6.0.0",
+make get/post call
+- "angular-smart-table": "^2.1.11",
+make table with checkbok and search
+- "angularjs-tooltips": "^1.0.5",
+show tooltips
+- "elasticsearch-browser": "^15.0.0",
+support ES function
+- "highcharts": "^6.1.0",
+draw charts
+
+
+### Charts
+
 
 
 ## Infra
@@ -148,10 +172,10 @@ Requirement:
 - ES is running
 
 Steps:
+
+- Service discovery for port
 - connect to ES
-  - Service discovery for Port
-  - connect to ES
-  - search with query
+- search with query
 
 For Sample code for Service discovery, check <a href="src/app/Service/elasticsearch.service.ts">elasticsearch.service.ts</a> function AfwDiscoverService
 
@@ -161,22 +185,35 @@ for usage, check <a href="src/app/layout/rpms/routeTracker/charts/charts.compone
 
 #### UTR
 There is 2 way to use UTR/pipeline in DCNM:
-1.start UTR as binary (for dev)
-2.run UTR as container (for production)
+- start UTR as binary (for dev)
+- run UTR as container (for production)
 
 - Binary
   - set pipeline.conf and parse.json
   - run binary use this line: ./nexus-pipeline -log ./pipeline.log -config ./pipeline.conf -parser ./parser.json
 
   <p align="center">
-    <img title="example of running pipeline binary" src="docs/pipeline.png" width="450"/>
+    <img title="example of running pipeline binary" src="docs/pipeline.png" width="550"/>
   </p>
-
+"transport:http2Server.HandleStreams failed to receivedthe preface from client" has no influence so far.
 - Container
+
 TODO
 
 #### NXAPI
-NXAPI
+One way to run NXAPI through dcnm is through rest/epl/nx-api-invoke.
+**Alert, DCNM may not support nxapi call with normal token, please check with dcnm team to get more detail.**
+**this api cannot run 2 clis in one call**
+
+Step:
+- get dcnm Token
+- add token to header
+- make nxapi call
+
+For dcnm Token check <a href="src/app/Service/nxapi.service.ts">nxapi.service.ts</a>
+function getDcnmToken()
+For make nxapi call, check function preRunCli(cli, switches, appName)
+For usage, check onWatch() in <a href="src/app/layout/rpms/routeTracker/routeTracker.component.ts">routeTracker.component.ts</a>
 
 ## FQA
 ### What should I do if I get "redirect fail, please try again"?
