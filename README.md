@@ -15,8 +15,8 @@ Table of Contents
 * [AngularJS](#angularjs)
   * [Dependency](#dependency)
   * [Build](#build)
-* [Services](#services)
-  * [ElasticSearch](#elasticSearch)
+* [Infra](#infra)
+  * [ElasticSearch](#elasticsearch)
   * [UTR](#utr)
   * [NXAPI](#nxapi)
 * [FQA](#fqa)
@@ -89,7 +89,7 @@ The imageName has to be unique across different applications
 - Depends:
 The following Tag Describes Dependency images for this App to be runnable. In order to
 deploy the app following images need to be available on the DCNM.
--
+
 Category: Application / Infra
 A Meaningful representation of the image category. Use one of Application or Infra
 
@@ -117,9 +117,10 @@ For more detail: <a href="docs/AFWUserGuide.docx">AFWUserGuide</a>
 
 ### Docker container image
 
-Compile the AngularJS project to production code with command: ng build --prod
+Compile the AngularJS project to production code with command:
+ng build --prod
 Make sure you are using the relative paths:
-  <yourProject>-> dist -> index.html
+  yourProject -> dist -> index.html
   at line 6
   change <base href="./"> to <base href="./">
 Sample code <a href="dist/index.html">index.html</a>
@@ -131,13 +132,52 @@ Check Dockerfile for more detail <a href="Dockerfile">Dockerfile</a>
 File name needs to be icon.png
 
 
-## Services
+## Infra
+
+Infra inside DCNM include service ES and api like nxapi.
+
+For the Services provide by DCNM (app), service discovery is needed to find out the port of the services. After the port is found, Service can be used as standalone service.
+
+For the api, please search specific api for more instruction.
 
 #### ElasticSearch
 ES
+To get the data in ES:
+Requirement:
+- elasthicsearch.js (install elasticsearch-browser with npm in angular)
+- ES is running
+
+Steps:
+- connect to ES
+  - Service discovery for Port
+  - connect to ES
+  - search with query
+
+For Sample code for Service discovery, check <a href="src/app/Service/elasticsearch.service.ts">elasticsearch.service.ts</a> function AfwDiscoverService
+
+For connect to ES, check function connectToES
+
+for usage, check <a href="src/app/layout/rpms/routeTracker/charts/charts.component.ts">charts.component.ts</a>
+
 #### UTR
-pipeline
+There is 2 way to use UTR/pipeline in DCNM:
+1.start UTR as binary (for dev)
+2.run UTR as container (for production)
+
+- Binary
+  - set pipeline.conf and parse.json
+  - run binary use this line: ./nexus-pipeline -log ./pipeline.log -config ./pipeline.conf -parser ./parser.json
+
+  <p align="center">
+    <img title="example of running pipeline binary" src="docs/pipeline.png" width="450"/>
+  </p>
+
+- Container
+TODO
+
 #### NXAPI
 NXAPI
 
 ## FQA
+### What should I do if I get "redirect fail, please try again"?
+Wait for around 10-30min
