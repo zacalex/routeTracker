@@ -5,6 +5,8 @@ import {HttpClient, HttpHeaders} from '@angular/common/http';
 @Injectable()
 export class nxapiService {
 
+    // credential of the dcnm
+    // to apply for the dcnm token
     dcnmUserName = 'root';
     dcnmpwd = 'Ciscolab123';
 
@@ -24,11 +26,17 @@ export class nxapiService {
     };
 
     dcnmhttpOptions = {};
+    // local backend server address
     urlServer = 'http://localhost:3001/';
+
+    // url to make nxapi call
     private nxapiUrl = 'https://sjc-vinci-ucs14.cisco.com/rest/epl/nx-api-invoke/';
+    // url to apply for dcnm token
     private authUrl = 'https://sjc-vinci-ucs14.cisco.com/fm/fmrest/dcnm/auth';
     dcnmToken = '';
+    // dcnm ip address
     hostIp = '172.27.254.17';
+
     nxapiLogs = [];
 
 
@@ -36,9 +44,8 @@ export class nxapiService {
         if (this.isOnDCNM){
             this.getDcnmToken();
         }
-
     }
-
+    // function to get dcnm token
     getDcnmToken() {
         const payload = {
             'j_username': this.dcnmUserName,
@@ -72,7 +79,7 @@ export class nxapiService {
             }
         );
     }
-
+    // function to run nxapi for both standalone and dcnm
     preRunCli(cli, switches, appName) {
 
         if (this.isOnDCNM){
@@ -110,7 +117,7 @@ export class nxapiService {
 
     }
 
-
+    // make nxapi call to standalone backend
     runCli(cli, version, type, switches, appName) {
         console.log(cli);
         console.log(version);
@@ -142,7 +149,7 @@ export class nxapiService {
                 }
             );
     }
-
+    // make post with nxapi payload
     postJsonToLocalBackend(obj, url) {
         console.log('here to do the post');
         const parameter = JSON.stringify(obj);
@@ -151,7 +158,7 @@ export class nxapiService {
         return this.http.post(url, parameter, this.httpOptions);
 
     }
-
+    
     runCliOnDcnm(ip, cli) {
         const payload = {
             'ip': ip,
@@ -162,7 +169,7 @@ export class nxapiService {
         console.log(parameter);
         return this.http.post(this.nxapiUrl, parameter, this.dcnmhttpOptions);
     }
-
+    // test nxapi call to dcnm
     testCli() {
         const payload = {
             'ip': '172.25.140.229',

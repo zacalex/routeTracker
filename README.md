@@ -11,6 +11,7 @@ Table of Contents
 
 * Cisco NX-SDK and DCNM AWF
 * [Structure](#structure)
+  * [Deploy](#deploy)
 * [Package](#package)
   * [App specification](#app specification)
   * [Docker image](#docker image)
@@ -23,6 +24,8 @@ Table of Contents
   * [ElasticSearch](#elasticsearch)
   * [UTR](#utr)
   * [NXAPI](#nxapi)
+
+
 * [FQA](#fqa)
 
 ## Cisco NX-SDK and DCNM AWF
@@ -58,6 +61,21 @@ The application include a nxsdk agent running on switch, and a AFW app running i
 No code change needed for pipeline. Only needs to change is 2 config file.
 ES mapping and template is needed.
 The app part provide the simplified user interface, it send simplified instruction to NXSDK agent, and NXSDK agent send customized event data to telemetry, then telemetry stream data to pipeline and ES, then app do the visualization and more analysis.
+
+Also the UI can work standalone, but backend and database is needed for retrieve data and making nxapi call.
+### Deploy
+
+To deploy the app to DCNM
+- prepare the app package
+- config the UTR and ES mapping
+- upload package
+- start app in GUI
+
+To start the standalone version
+- start ES
+- start and config UTR/pipeline
+- start backend
+- start UI as AngularJS project (ng serve)
 
 ## Package
 
@@ -153,6 +171,10 @@ draw charts
 
 
 ### Charts
+To draw the chart with highcharts and ES
+- query the ES with aggregations
+- put the aggregations to highchart data format
+- init the chart / redraw the chartTarget
 
 
 
@@ -214,6 +236,8 @@ For dcnm Token check <a href="src/app/Service/nxapi.service.ts">nxapi.service.ts
 function getDcnmToken()
 For make nxapi call, check function preRunCli(cli, switches, appName)
 For usage, check onWatch() in <a href="src/app/layout/rpms/routeTracker/routeTracker.component.ts">routeTracker.component.ts</a>
+
+
 
 ## FQA
 ### What should I do if I get "redirect fail, please try again"?

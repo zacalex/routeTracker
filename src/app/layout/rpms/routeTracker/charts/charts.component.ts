@@ -20,9 +20,9 @@ export class ChartsComponent implements OnInit {
     // highcharts
     public chartHeight = 35;
 
-    @ViewChild('chartTarget') chartTarget: ElementRef;
-    // @ViewChild('ipBarChart') ipBarChart: ElementRef;
 
+    // element for charts
+    @ViewChild('chartTarget') chartTarget: ElementRef;
     @ViewChild('top1') top1: ElementRef;
     @ViewChild('top2') top2: ElementRef;
     @ViewChild('top3') top3: ElementRef;
@@ -31,6 +31,7 @@ export class ChartsComponent implements OnInit {
     @ViewChild('detailPie') detailPie: ElementRef;
 
 
+    // Highchart objects
     chart: Highcharts.ChartObject;
     barChart: Highcharts.ChartObject;
     pieChart1: Highcharts.ChartObject;
@@ -40,6 +41,7 @@ export class ChartsComponent implements OnInit {
     pieChart5: Highcharts.ChartObject;
     pieChart6: Highcharts.ChartObject;
 
+    // colors for line chart dots
     EventColors = ['#00FF00', '#FF0000'];
 
 
@@ -48,6 +50,8 @@ export class ChartsComponent implements OnInit {
     EventChartname = 'test';
     autoFlag = true;
     switchCounts = 0;
+    switchname = '';
+    owner = '';
 
     tableTitle = 'latest on ';
     public radioGroupForm: FormGroup;
@@ -63,52 +67,53 @@ export class ChartsComponent implements OnInit {
     // bar chart
     // pieChartData = {};
 
-    ES_QUERY_OWNER = {
-        index: 'routetracker_event_stats_*',
-        body: {
-            'query': {
-                'bool': {
-                    'must':
-                        [{
-                            'exists': {
-                                'field': 'cnt_total'
-                            }
+    // ES_QUERY_OWNER = {
+    //     index: 'routetracker_event_stats_*',
+    //     body: {
+    //         'query': {
+    //             'bool': {
+    //                 'must':
+    //                     [{
+    //                         'exists': {
+    //                             'field': 'cnt_total'
+    //                         }
+    //
+    //                     }, {
+    //                         'exists': {
+    //                             'field': 'owner_source'
+    //                         }
+    //
+    //                     }
+    //                     ],
+    //                 'must_not': [
+    //                     {
+    //                         'exists': {
+    //                             'field': 'event'
+    //                         }
+    //                     }
+    //                 ],
+    //                 'filter': {
+    //                     'range': {
+    //                         'timestamp': {
+    //                             'gte': 'now-1h',
+    //                             'lte': 'now'
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //         , 'size': 50,
+    //         'sort': [
+    //             {
+    //                 'timestamp': {
+    //                     'order': 'desc'
+    //                 }
+    //             }
+    //         ]
+    //     }
+    //
+    // };
 
-                        }, {
-                            'exists': {
-                                'field': 'owner_source'
-                            }
-
-                        }
-                        ],
-                    'must_not': [
-                        {
-                            'exists': {
-                                'field': 'event'
-                            }
-                        }
-                    ],
-                    'filter': {
-                        'range': {
-                            'timestamp': {
-                                'gte': 'now-1h',
-                                'lte': 'now'
-                            }
-                        }
-                    }
-                }
-            }
-            , 'size': 50,
-            'sort': [
-                {
-                    'timestamp': {
-                        'order': 'desc'
-                    }
-                }
-            ]
-        }
-
-    };
     ES_QUERY_AGGS_OWNER = {
         index: 'routetracker*',
         body: {
@@ -299,8 +304,7 @@ export class ChartsComponent implements OnInit {
         }
 
     };
-    switchname = '';
-    owner = '';
+
 
 
     constructor(private es: ElasticsearchService,

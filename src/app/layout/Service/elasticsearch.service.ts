@@ -6,36 +6,37 @@ import {Client} from 'elasticsearch-browser';
 export class ElasticsearchService {
 
     private isDcnmVersion = true;
-
+    // ES client
     private client: Client;
-    private baseUrl = 'https://sjc-vinci-ucs14.cisco.com/afw/integrated/http_';
+
+    // url parts to constructor dcnm ES
     private searchUrl = 'https://sjc-vinci-ucs14.cisco.com/afw/integrated/http_';
     private searchTail = '/dcnm-elasticsearch-api/Data%20Center';
+
+    // standalone ES address
     private url = 'localhost:9200';
+
+    //http header
     httpOptions = {
         headers: new HttpHeaders({ 'Content-Type': 'application/json' })
     };
 
     constructor(private http: HttpClient) {
-
-        if (this.isDcnmVersion) {
-            this.AfwDiscoverService('dcnm-elasticsearch-api', '');
-        } else {
-            if (!this.client) {
-                this.connectLocal();
-            }
-        }
-
-
+        this.connectToES();
     }
 
-    private connect(port) {
-
-        this.client = new Client({
-            // host: 'http://172.27.252.26:9200',
-            host: this.searchUrl + port + this.searchTail
-        });
+    // connect to ES depend on the version
+    private connectToES(){
+      if (this.isDcnmVersion) {
+          this.AfwDiscoverService('dcnm-elasticsearch-api', '');
+      } else {
+          if (!this.client) {
+              this.connectLocal();
+          }
+      }
     }
+
+    // connect to local ES
     private connectLocal() {
         console.log('nomal connect ');
         this.client = new Client({
@@ -44,20 +45,19 @@ export class ElasticsearchService {
         });
     }
 
-
+    // ES search interface
     search(data) {
         // // const parameter = JSON.stringify(data);
         // // this.http.get()
         // return this.http.get(this.url, data).toP;
         if (!this.client) {
-            this.connect('33500');
+            this.connectToES();
         }
         return this.client.search(data);
     }
 
-
+    // dervice discovery for Dcnm
     AfwDiscoverService(svc, fabric) {
-
 
         const x = {ServiceName: svc, PublishedPort: 0, PublicIP: '', error: 1, success: -1};
         const urlConstant = '/cors-proxy/cn1-cors-proxy?_target=http://localhost:35000/afw/service/';
@@ -76,6 +76,15 @@ export class ElasticsearchService {
             }
         });
 
+    }
+
+    // connect to the DCNM ES after get the port from service discovery
+    private connect(port) {
+
+        this.client = new Client({
+            // host: 'http://172.27.252.26:9200',
+            host: this.searchUrl + port + this.searchTail
+        });
     }
 
 
